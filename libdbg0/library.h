@@ -28,17 +28,22 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#ifndef LIBRARY_H
+#define LIBRARY_H
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+namespace dbg0
 {
-    ui->setupUi(this);
-}
+namespace interfaces
+{
 
-MainWindow::~MainWindow()
+class Library
 {
-    delete ui;
-}
+public:
+    virtual ~Library() {}
+};
+
+} // namespace interfaces
+} // namespace dbg0
+
+
+#endif // LIBRARY_H

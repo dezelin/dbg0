@@ -13,9 +13,17 @@ DEFINES += LIBDBG0_LIBRARY
 
 SOURCES += libdbg0.cpp
 
-HEADERS += libdbg0.h
+HEADERS += libdbg0.h \
+    cpu.h \
+    executable.h \
+    symboltable.h \
+    library.h
 
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+
+unix|win32: LIBS += -ldwarf
+unix|win32: LIBS += -lelf

@@ -28,17 +28,21 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#ifndef CPU_H
+#define CPU_H
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+namespace dbg0
 {
-    ui->setupUi(this);
-}
+namespace interfaces
+{
 
-MainWindow::~MainWindow()
+class CPU
 {
-    delete ui;
-}
+public:
+    virtual ~CPU() {}
+};
+
+} // namespace interfaces
+} // namespace dbg0
+
+#endif // CPU_H

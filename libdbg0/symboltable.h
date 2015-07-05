@@ -28,17 +28,22 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#ifndef SYMBOLTABLE_H
+#define SYMBOLTABLE_H
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+namespace dbg0
 {
-    ui->setupUi(this);
-}
+namespace interfaces
+{
 
-MainWindow::~MainWindow()
+class SymbolTable
 {
-    delete ui;
-}
+public:
+    virtual ~SymbolTable() {}
+};
+
+} // namespace interfaces
+} // namespace dbg0
+
+
+#endif // SYMBOLTABLE_H
