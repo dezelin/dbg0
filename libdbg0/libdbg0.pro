@@ -17,7 +17,8 @@ HEADERS += libdbg0.h \
     cpu.h \
     executable.h \
     symboltable.h \
-    library.h
+    library.h \
+    symbolfile.h
 
 unix {
     target.path = /usr/lib

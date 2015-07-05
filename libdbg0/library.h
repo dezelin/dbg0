@@ -31,12 +31,14 @@
 #ifndef LIBRARY_H
 #define LIBRARY_H
 
+#include "symbolfile.h"
+
 namespace dbg0
 {
 namespace interfaces
 {
 
-class Library
+class Library : public SymbolFile
 {
 public:
     virtual ~Library() {}

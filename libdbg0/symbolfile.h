@@ -28,23 +28,30 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef EXECUTABLE_H
-#define EXECUTABLE_H
+#ifndef SYMBOLFILE_H
+#define SYMBOLFILE_H
 
-#include "symbolfile.h"
+#include "symboltable.h"
+
 
 namespace dbg0
 {
 namespace interfaces
 {
 
-class Executable : public SymbolFile
+class SymbolFile
 {
 public:
-    virtual ~Executable() {}
+    virtual ~SymbolFile() {}
+
+    //
+    // Interface
+    //
+
+    SymbolTable* symbolTable() const = 0;
 };
 
 } // namespace interfaces
 } // namespace dbg0
 
-#endif // EXECUTABLE_H
+#endif // SYMBOLFILE_H
