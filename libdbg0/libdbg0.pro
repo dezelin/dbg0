@@ -16,8 +16,8 @@ SOURCES += libdbg0.cpp
 HEADERS += libdbg0.h \
     cpu.h \
     executable.h \
-    symboltable.h \
     library.h \
+    symboltable.h \
     symbolfile.h
 
 unix {
