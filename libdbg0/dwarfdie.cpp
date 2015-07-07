@@ -30,13 +30,103 @@
 
 #include "dwarfdie.h"
 
+#include <assert.h>
+#include <list>
+
 namespace dbg0
 {
 namespace dwarf
 {
 
-DwarfDie::DwarfDie()
+class DwarfDie::DwarfDiePrivate
 {
+public:
+    DwarfDiePrivate(DwarfDie::Type type)
+        : _type(type)
+    {
+
+    }
+
+    DwarfDiePrivate(const DwarfDiePrivate &priv)
+    {
+        _type = priv._type;
+    }
+
+    //
+    // Interface
+    //
+
+    void add(Die* die)
+    {
+        assert(die);
+        _children.push_back(die);
+    }
+
+    const std::list<Die*> &children() const
+    {
+        return _children;
+    }
+
+    DwarfDie::Type type() const
+    {
+        return _type;
+    }
+
+private:
+    DwarfDie::Type _type;
+    std::list<Die*> _children;
+};
+
+DwarfDie::DwarfDie(DwarfDie::Type type)
+    : Die()
+    , _p(new DwarfDiePrivate(type))
+{
+}
+
+DwarfDie::~DwarfDie()
+{
+
+}
+
+DwarfDie::DwarfDie(const DwarfDie &die)
+{
+    assert(_p);
+    _p.reset(new DwarfDiePrivate(*die._p));
+}
+
+DwarfDie::DwarfDie(DwarfDie &&die)
+    : DwarfDie()
+{
+    std::swap(*this, die);
+}
+
+DwarfDie& DwarfDie::operator= (DwarfDie die)
+{
+    std::swap(*this, die);
+    return *this;
+}
+
+void DwarfDie::swap(DwarfDie &die)
+{
+    std::swap(_p, die._p);
+}
+
+void DwarfDie::add(Die* die)
+{
+    assert(_p);
+    _p->add(die);
+}
+
+const std::list<Die*>& DwarfDie::children() const
+{
+    assert(_p);
+    return _p->children();
+}
+
+int DwarfDie::type() const
+{
+    assert(_p);
+    return static_cast<int>(_p->type());
 }
 
 } // namespace dwarf

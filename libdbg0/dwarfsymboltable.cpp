@@ -152,7 +152,429 @@ private:
 
     int addDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, Dwarf_Die die)
     {
-        return 0;
+        int err;
+        Dwarf_Half tag;
+        Dwarf_Error error;
+        if ((err = dwarf_tag(die, &tag, &error)) != DW_DLV_OK)
+            return err;
+
+        switch(tag) {
+        case DW_TAG_array_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_class_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_entry_point: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_enumeration_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_formal_parameter: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_imported_declaration: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_label: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_lexical_block: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_member: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_pointer_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_reference_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_compile_unit: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_string_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_structure_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_subroutine_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_typedef: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_union_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_unspecified_parameters: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_variant: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_common_block: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_common_inclusion: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_inheritance: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_inlined_subroutine: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_module: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_ptr_to_member_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_set_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_subrange_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_with_stmt: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_access_declaration: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_base_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_catch_block: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_const_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_constant: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_enumerator: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_file_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_friend: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_namelist: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_namelist_item: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_packed_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_subprogram: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_template_type_parameter: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_template_value_parameter: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_thrown_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_try_block: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_variant_part: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_variable: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_volatile_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_dwarf_procedure: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_restrict_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_interface_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_namespace: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_imported_module: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_unspecified_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_partial_unit: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_imported_unit: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_mutable_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_condition: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_shared_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_type_unit: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_rvalue_reference_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_template_alias: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_lo_user: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_MIPS_loop: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_HP_array_descriptor: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_format_label: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_function_template: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_class_template: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_BINCL: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_EINCL: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_template_template_parameter: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_template_parameter_pack: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_formal_parameter_pack: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_call_site: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_GNU_call_site_parameter: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_ALTIUM_circ_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_ALTIUM_mwa_circ_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_ALTIUM_rev_carry_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_ALTIUM_rom: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_upc_shared_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_upc_strict_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_upc_relaxed_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_PGI_kanji_type: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_PGI_interface_block: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_function_template: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_class_template: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_struct_template: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_union_template: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_indirect_inheritance: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_codeflags: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_memop_info: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_omp_child_func: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_rtti_descriptor: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_dtor_info: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_dtor: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_f90_interface: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_fortran_vax_structure: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_SUN_hi: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        case DW_TAG_hi_user: {
+            err = addArrayTypeDie(dbg, cu, die);
+            break;
+        }
+        default: {
+            assert(!"Unknown die tag.");
+            break;
+        }
+        }
+
+        return err;
+    }
+
+    int addArrayTypeDie(Dwarf_Debug dbg, Die *parent, Dwarf_Die die)
+    {
+        int err;
+        Dwarf_Half tag;
+        Dwarf_Error error;
+        if ((err = dwarf_tag(die, &tag, &error)) != DW_DLV_OK)
+            return err;
+
+        assert(tag == DW_TAG_array_type);
+        if (tag != DW_TAG_array_type)
+            return -1;
+
+        //std::unique_ptr<DwarfArrayTypeDie> _d(new DwarfArrayTypeDie());
+
+        return err;
     }
 
 private:

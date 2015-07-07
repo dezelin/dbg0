@@ -30,7 +30,8 @@ HEADERS += libdbg0.h \
     die.h \
     dwarfsymboltable.h \
     dwarfcompilationunit.h \
-    dwarfdie.h
+    dwarfdie.h \
+    attribute.h
 
 unix {
     target.path = /usr/lib

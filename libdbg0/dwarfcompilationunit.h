@@ -78,7 +78,9 @@ public:
 
     virtual void add(Die* die);
 
-    virtual const std::list<Die*>& dies() const;
+    virtual const std::list<Die*>& children() const;
+
+    virtual int type() const;
 
 private:
     class DwarfCompilationUnitPrivate;

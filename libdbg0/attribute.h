@@ -28,31 +28,28 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DIE_H
-#define DIE_H
-
-#include <list>
+#ifndef ATTRIBUTE_H
+#define ATTRIBUTE_H
 
 namespace dbg0
 {
 namespace interfaces
 {
 
-class Die
+class Attribute
 {
 public:
+
+    static const int UNKNOWN_CLASS = -1;
     static const int UNKNOWN_TYPE = -1;
 
-    virtual ~Die() { }
+    virtual ~Attribute() { }
 
     //
     // Interface
     //
 
-    virtual void add(Die* die) = 0;
-
-    virtual const std::list<Die*>& children() const = 0;
-
+    virtual int attrClass() const = 0;
     virtual int type() const = 0;
 
 };
@@ -60,4 +57,4 @@ public:
 } // namespace interfaces
 } // namespace dbg0
 
-#endif // DIE_H
+#endif // ATTRIBUTE_H

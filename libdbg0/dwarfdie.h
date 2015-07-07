@@ -31,7 +31,9 @@
 #ifndef DWARFDIE_H
 #define DWARFDIE_H
 
-#include <die.h>
+#include "die.h"
+
+#include <memory>
 
 namespace dbg0
 {
@@ -43,7 +45,133 @@ using namespace interfaces;
 class DwarfDie : public Die
 {
 public:
-    DwarfDie();
+
+    enum class Type : int {
+        ArrayType = 0,
+        ClassType,
+        EntryPoint,
+        EnumerationType,
+        FormalParameter,
+        ImportedDeclaration,
+        Label,
+        LexicalBlock,
+        Member,
+        PointerType,
+        ReferenceType,
+        CompileUnit,
+        StringType,
+        StructureType,
+        SubroutineType,
+        Typedef,
+        UnionType,
+        UnspecifiedParameters,
+        Variant,
+        CommonBlock,
+        CommonInclusion,
+        Inheritance,
+        InlinedSubroutine,
+        Module,
+        PointerToMemberType,
+        SetType,
+        SubrangeType,
+        WithStatement,
+        AccessDeclaration,
+        BaseType,
+        CatchBlock,
+        ConstType,
+        Constant,
+        Enumerator,
+        FileType,
+        Friend,
+        Namelist,
+        NamelistItem,
+        PackedType,
+        Subprogram,
+        TemplateTypeParameter,
+        TemplateValueParameter,
+        ThrownType,
+        TryBlock,
+        VariantPart,
+        Variable,
+        VolatileType,
+        DwarfProcedure,
+        RestrictType,
+        InterfaceType,
+        Namespace,
+        ImportedModule,
+        UnspecifiedType,
+        PartialUnit,
+        ImportedUnit,
+        MutableType,
+        Condition,
+        SharedType,
+        TypeUnit,
+        RValueReferenceType,
+        TemplateAlias,
+        LoUser,
+        MIPSLoop,
+        HPArrayDescriptor,
+        FormatLabel,
+        FunctionTemplate,
+        ClassTemplate,
+        GNUBINCL,
+        GNUEINCL,
+        GNUTemplateTemplateParameter,
+        GNUTemplateParameterPack,
+        GNUFormalParameterPack,
+        GNUCallSite,
+        GNUCallSiteParameter,
+        ALTIUMCircType,
+        ALTIUMMWACircType,
+        ALTIUMRevCarryType,
+        ALTIUMRom,
+        UPCSharedType,
+        UPCStrictType,
+        UPCRelaxedType,
+        PGIKanjiType,
+        PGIInterfaceBlock,
+        SUNFunctionTemplate,
+        SUNClassTemplate,
+        SUNStructTemplate,
+        SUNUnionTemplate,
+        SUNIndirectInheritance,
+        SUNCodeFlags,
+        SUNMemOpInfo,
+        SUNOMPChildFunc,
+        SUNRTTIDescriptor,
+        SUNDtorInfo,
+        SUNDtor,
+        SUNf90Interface,
+        SUNFortranVaxStructure,
+        SUNHi,
+        HiUser,
+
+        UnknownType = -1
+    };
+
+    DwarfDie(DwarfDie::Type type = DwarfDie::Type::UnknownType);
+    virtual ~DwarfDie();
+
+    DwarfDie(const DwarfDie &die);
+    DwarfDie(DwarfDie &&die);
+
+    DwarfDie& operator= (DwarfDie die);
+
+    void swap(DwarfDie &die);
+
+    //
+    // Interface
+    //
+
+    virtual void add(Die* die);
+
+    virtual const std::list<Die*>& children() const;
+
+    virtual int type() const;
+
+private:
+    class DwarfDiePrivate;
+    std::unique_ptr<DwarfDiePrivate> _p;
 };
 
 } // namespace dwarf

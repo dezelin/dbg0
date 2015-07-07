@@ -45,6 +45,7 @@ public:
         , _version(0)
         , _abbrevOffset(0)
         , _addressSize(0)
+        , _type(DwarfDie::Type::CompileUnit)
     {
     }
 
@@ -54,6 +55,9 @@ public:
         _version = priv.version();
         _abbrevOffset = priv.abbrevOffset();
         _addressSize = priv.addressSize();
+
+        _type = priv.type();
+        _children = priv.children();
     }
 
     size_t headerLength() const
@@ -104,12 +108,17 @@ public:
     void add(Die* die)
     {
         assert(die);
-        _dies.push_back(die);
+        _children.push_back(die);
     }
 
-    const std::list<Die*>& dies() const
+    const std::list<Die*>& children() const
     {
-        return _dies;
+        return _children;
+    }
+
+    DwarfDie::Type type() const
+    {
+        return _type;
     }
 
 private:
@@ -118,7 +127,8 @@ private:
     size_t _abbrevOffset;
     int _addressSize;
 
-    std::list<Die*> _dies;
+    std::list<Die*> _children;
+    DwarfDie::Type _type;
 };
 
 DwarfCompilationUnit::DwarfCompilationUnit()
@@ -216,10 +226,16 @@ void DwarfCompilationUnit::add(Die* die)
     _p->add(die);
 }
 
-const std::list<Die *> &DwarfCompilationUnit::dies() const
+const std::list<Die *> &DwarfCompilationUnit::children() const
 {
     assert(_p);
-    return _p->dies();
+    return _p->children();
+}
+
+int DwarfCompilationUnit::type() const
+{
+    assert(_p);
+    return static_cast<int>(_p->type());
 }
 
 
