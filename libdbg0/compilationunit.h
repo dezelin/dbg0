@@ -37,6 +37,8 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace dies
+{
 
 class CompilationUnit : public Die
 {
@@ -45,6 +47,7 @@ public:
 
 };
 
+} // namespace dies
 } // namespace interfaces
 } // namespace dbg0
 

@@ -50,6 +50,12 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace symbols
+{
+
+using namespace attributes;
+using namespace dies;
+using namespace factories;
 
 class DwarfSymbolTable::DwarfSymbolTablePrivate
 {
@@ -629,7 +635,7 @@ private:
 };
 
 DwarfSymbolTable::DwarfSymbolTable()
-    : interfaces::SymbolTable()
+    : SymbolTable()
     , _p(new DwarfSymbolTablePrivate())
 {
 }
@@ -677,5 +683,6 @@ const std::list<Die*>& DwarfSymbolTable::compilationUnits() const
     return _p->compilationUnits();
 }
 
+} // namespace symbols
 } // namespace dwarf
 } // namespace dbg0

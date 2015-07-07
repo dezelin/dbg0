@@ -39,8 +39,10 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace attributes
+{
 
-using namespace interfaces;
+using namespace interfaces::attributes;
 
 class DwarfAttribute : public Attribute
 {
@@ -77,6 +79,7 @@ private:
     std::unique_ptr<DwarfAttributePrivate> _p;
 };
 
+} // namespace attributes
 } // namespace dwarf
 } // namespace dbg0
 

@@ -34,6 +34,8 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace factories
+{
 
 DwarfDieFactory::DwarfDieFactory()
 {
@@ -58,7 +60,6 @@ DwarfDie* DwarfDieFactory::createDie(DwarfDie::Type type) const
     return nullptr;
 }
 
-
-
+} // namespace factories
 } // namespace dwarf
 } // namespace dbg0

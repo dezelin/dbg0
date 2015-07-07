@@ -37,6 +37,8 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace archives
+{
 
 class Library : public SymbolFile
 {
@@ -44,6 +46,7 @@ public:
     virtual ~Library() {}
 };
 
+} // namespace archives
 } // namespace interfaces
 } // namespace dbg0
 

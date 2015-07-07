@@ -35,7 +35,9 @@
 
 int main(int argc, char *argv[])
 {
-    dbg0::elf::ElfExecutable exec;
+    using namespace dbg0::elf::archives;
+
+    ElfExecutable exec;
     exec.readSymbolTable("/home/dezelin/Workspace/build-dbg0-Desktop-Debug/debugger/dbg0");
 
     QApplication a(argc, argv);

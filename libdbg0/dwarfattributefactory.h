@@ -37,6 +37,10 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace factories
+{
+
+using namespace attributes;
 
 class DwarfAttributeFactory
 {
@@ -54,6 +58,7 @@ private:
     DwarfAttributeFactory &operator= (const DwarfAttributeFactory&) = delete;
 };
 
+} // namespace factories
 } // namespace dwarf
 } // namespace dbg0
 

@@ -36,6 +36,8 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace attributes
+{
 
 class DwarfAttribute::DwarfAttributePrivate
 {
@@ -117,6 +119,6 @@ int DwarfAttribute::type() const
     return static_cast<int>(_p->type());
 }
 
-
+} // namespace attributes
 } // namespace dwarf
 } // namespace dbg0

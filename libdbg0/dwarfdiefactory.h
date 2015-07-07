@@ -38,6 +38,10 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace factories
+{
+
+using namespace dies;
 
 class DwarfDieFactory
 {
@@ -56,6 +60,7 @@ private:
     DwarfDieFactory &operator= (const DwarfDieFactory&) = delete;
 };
 
+} // namespace factories
 } // namespace dwarf
 } // namespace dbg0
 

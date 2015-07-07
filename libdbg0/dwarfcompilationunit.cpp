@@ -36,6 +36,8 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace dies
+{
 
 class DwarfCompilationUnit::DwarfCompilationUnitPrivate
 {
@@ -190,5 +192,6 @@ void DwarfCompilationUnit::setAddressSize(int size)
     _p->setAddressSize(size);
 }
 
+} // namespace dies
 } // namespace dwarf
 } // namespace dbg0

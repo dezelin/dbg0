@@ -37,8 +37,11 @@ namespace dbg0
 {
 namespace elf
 {
+namespace archives
+{
 
 using namespace dwarf;
+using namespace symbols;
 
 class ElfExecutable::ElfExecutablePrivate
 {
@@ -105,7 +108,7 @@ private:
 
 
 ElfExecutable::ElfExecutable(SymbolTableReader reader)
-    : interfaces::Executable()
+    : Executable()
     , _p(new ElfExecutablePrivate(reader))
 {
 }
@@ -168,5 +171,6 @@ SymbolTable* ElfExecutable::symbolTable() const
     return _p->symbolTable();
 }
 
+} // namespace archives
 } // namespace elf
 } // namespace dbg0

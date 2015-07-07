@@ -35,6 +35,8 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace cpus
+{
 
 class CPU
 {
@@ -42,6 +44,7 @@ public:
     virtual ~CPU() {}
 };
 
+} // namespace cpus
 } // namespace interfaces
 } // namespace dbg0
 

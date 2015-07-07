@@ -39,6 +39,10 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace archives
+{
+
+using namespace symbols;
 
 class SymbolFile
 {
@@ -56,6 +60,7 @@ public:
     virtual SymbolTable* symbolTable() const = 0;
 };
 
+} // namespace archives
 } // namespace interfaces
 } // namespace dbg0
 

@@ -37,6 +37,8 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace archives
+{
 
 class Executable : public SymbolFile
 {
@@ -44,6 +46,7 @@ public:
     virtual ~Executable() {}
 };
 
+} // namespace archives
 } // namespace interfaces
 } // namespace dbg0
 

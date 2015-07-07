@@ -40,6 +40,10 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace symbols
+{
+
+using namespace dies;
 
 class SymbolTable
 {
@@ -51,6 +55,7 @@ public:
     virtual const std::list<Die*>& compilationUnits() const = 0;
 };
 
+} // namespace symbols
 } // namespace interfaces
 } // namespace dbg0
 

@@ -34,6 +34,8 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace factories
+{
 
 DwarfAttributeFactory::DwarfAttributeFactory()
 {
@@ -53,5 +55,6 @@ DwarfAttribute* DwarfAttributeFactory::createDie(DwarfAttribute::Type type) cons
     return nullptr;
 }
 
+} // namespace factories
 } // namespace dwarf
 } // namespace dbg0

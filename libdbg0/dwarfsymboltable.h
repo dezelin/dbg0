@@ -39,8 +39,10 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace symbols
+{
 
-using namespace interfaces;
+using namespace interfaces::symbols;
 
 class DwarfSymbolTable : public SymbolTable
 {
@@ -69,6 +71,7 @@ private:
     std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
+} // namespace symbols
 } // namespace dwarf
 } // namespace dbg0
 

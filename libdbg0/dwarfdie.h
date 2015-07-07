@@ -39,8 +39,10 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace dies
+{
 
-using namespace interfaces;
+using namespace interfaces::dies;
 
 class DwarfDie : public Die
 {
@@ -178,6 +180,7 @@ private:
     std::unique_ptr<DwarfDiePrivate> _p;
 };
 
+} // namespace dies
 } // namespace dwarf
 } // namespace dbg0
 

@@ -37,6 +37,8 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace dies
+{
 
 class DwarfDie::DwarfDiePrivate
 {
@@ -153,5 +155,6 @@ int DwarfDie::type() const
     return static_cast<int>(_p->type());
 }
 
+} // namespace dies
 } // namespace dwarf
 } // namespace dbg0

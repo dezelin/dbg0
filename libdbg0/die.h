@@ -39,6 +39,10 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace dies
+{
+
+using namespace attributes;
 
 class Die
 {
@@ -62,6 +66,7 @@ public:
 
 };
 
+} // namespace dies
 } // namespace interfaces
 } // namespace dbg0
 

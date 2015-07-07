@@ -40,8 +40,10 @@ namespace dbg0
 {
 namespace elf
 {
+namespace archives
+{
 
-using namespace interfaces;
+using namespace interfaces::archives;
 
 class ElfExecutable : public Executable
 {
@@ -81,6 +83,7 @@ private:
     std::unique_ptr<ElfExecutablePrivate> _p;
 };
 
+} // namespace archives
 } // namespace elf
 } // namespace dbg0
 

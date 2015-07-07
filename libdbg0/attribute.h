@@ -35,6 +35,8 @@ namespace dbg0
 {
 namespace interfaces
 {
+namespace attributes
+{
 
 class Attribute
 {
@@ -51,6 +53,7 @@ public:
 
 };
 
+} // namespace attributes
 } // namespace interfaces
 } // namespace dbg0
 
