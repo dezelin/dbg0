@@ -56,10 +56,21 @@ public:
     // Interface
     //
 
+    void add(Attribute* attribute)
+    {
+        assert(attribute);
+        _attributes.push_back(attribute);
+    }
+
     void add(Die* die)
     {
         assert(die);
         _children.push_back(die);
+    }
+
+    const std::list<Attribute*> &attributes() const
+    {
+        return _attributes;
     }
 
     const std::list<Die*> &children() const
@@ -74,6 +85,7 @@ public:
 
 private:
     DwarfDie::Type _type;
+    std::list<Attribute*> _attributes;
     std::list<Die*> _children;
 };
 
@@ -111,10 +123,22 @@ void DwarfDie::swap(DwarfDie &die)
     std::swap(_p, die._p);
 }
 
+void DwarfDie::add(Attribute* attribute)
+{
+    assert(_p);
+    _p->add(attribute);
+}
+
 void DwarfDie::add(Die* die)
 {
     assert(_p);
     _p->add(die);
+}
+
+const std::list<Attribute*>& DwarfDie::attributes() const
+{
+    assert(_p);
+    return _p->attributes();
 }
 
 const std::list<Die*>& DwarfDie::children() const

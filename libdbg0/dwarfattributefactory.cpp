@@ -28,48 +28,30 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
-
-#include "symboltable.h"
-
-#include <memory>
+#include "dwarfattributefactory.h"
 
 namespace dbg0
 {
 namespace dwarf
 {
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+DwarfAttributeFactory::DwarfAttributeFactory()
 {
-public:
-    DwarfSymbolTable();
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+}
 
-    virtual ~DwarfSymbolTable();
+DwarfAttributeFactory& DwarfAttributeFactory::instance()
+{
+    // C++11 doesn't need double-check locking.
+    // This is enough to be thread-safe
+    static DwarfAttributeFactory factory;
+    return factory;
+}
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
-
-private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
-};
+DwarfAttribute* DwarfAttributeFactory::createDie(DwarfAttribute::Type type) const
+{
+    return nullptr;
+}
 
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

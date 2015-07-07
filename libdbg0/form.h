@@ -28,48 +28,32 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
-
-#include "symboltable.h"
-
-#include <memory>
+#ifndef FORM_H
+#define FORM_H
 
 namespace dbg0
 {
-namespace dwarf
+namespace interfaces
+{
+namespace forms
 {
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class Form
 {
 public:
-    DwarfSymbolTable();
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
-
-    virtual ~DwarfSymbolTable();
-
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
+    virtual ~Form() { }
 
     //
-    // Interface SymbolTable
+    // Interface
     //
 
-    virtual int readSymbolTable(const std::string &fileName);
+    virtual int formClass() const = 0;
 
-    virtual const std::list<Die*>& compilationUnits() const;
-
-private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
-} // namespace dwarf
+} // namespace forms
+} // namespace interfaces
 } // namespace dbg0
 
-#endif // DWARFSYMBOLTABLE_H
+#endif // FORM_H

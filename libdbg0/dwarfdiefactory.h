@@ -28,48 +28,35 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#ifndef DWARFDIEFACTORY_H
+#define DWARFDIEFACTORY_H
 
-#include "symboltable.h"
-
-#include <memory>
+#include "dwarfcompilationunit.h"
+#include "dwarfdie.h"
 
 namespace dbg0
 {
 namespace dwarf
 {
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfDieFactory
 {
 public:
-    DwarfSymbolTable();
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    // Singleton instance
+    static DwarfDieFactory& instance();
 
-    virtual ~DwarfSymbolTable();
-
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    DwarfCompilationUnit* createCompileUnit();
+    DwarfDie* createDie(DwarfDie::Type type) const;
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
+    // Non-copyable
+    DwarfDieFactory();
+    DwarfDieFactory(const DwarfDieFactory&) = delete;
+    DwarfDieFactory &operator= (const DwarfDieFactory&) = delete;
 };
 
 } // namespace dwarf
 } // namespace dbg0
 
-#endif // DWARFSYMBOLTABLE_H
+#endif // DWARFDIEFACTORY_H

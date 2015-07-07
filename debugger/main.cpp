@@ -36,7 +36,7 @@
 int main(int argc, char *argv[])
 {
     dbg0::elf::ElfExecutable exec;
-    int err = exec.readSymbolTable("/home/dezelin/Workspace/build-dbg0-Desktop-Debug/debugger/dbg0");
+    exec.readSymbolTable("/home/dezelin/Workspace/build-dbg0-Desktop-Debug/debugger/dbg0");
 
     QApplication a(argc, argv);
     MainWindow w;

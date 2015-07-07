@@ -28,48 +28,68 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarfmacroptrform.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfMacroPtrForm::DwarfMacroPtrFormPrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfMacroPtrFormPrivate()
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfMacroPtrFormPrivate(const DwarfMacroPtrFormPrivate &priv)
+    {
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
+DwarfMacroPtrForm::DwarfMacroPtrForm()
+    : DwarfForm(Class::MacroPtr)
+    , _p(new DwarfMacroPtrFormPrivate())
+{
+}
+
+DwarfMacroPtrForm::~DwarfMacroPtrForm()
+{
+
+}
+
+DwarfMacroPtrForm::DwarfMacroPtrForm(const DwarfMacroPtrForm &form)
+    : DwarfForm(form)
+{
+    _p.reset(new DwarfMacroPtrFormPrivate(*form._p));
+}
+
+DwarfMacroPtrForm::DwarfMacroPtrForm(DwarfMacroPtrForm &&form)
+    : DwarfMacroPtrForm()
+{
+    std::swap(*this, form);
+}
+
+DwarfMacroPtrForm& DwarfMacroPtrForm::operator= (DwarfMacroPtrForm form)
+{
+    std::swap(*this, form);
+    return *this;
+}
+
+void DwarfMacroPtrForm::swap(DwarfMacroPtrForm &form)
+{
+    DwarfForm::swap(form);
+    std::swap(_p, form._p);
+}
+
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

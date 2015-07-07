@@ -28,48 +28,68 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarflocationlistptrform.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfLocationListPtrForm::DwarfLocationListPtrFormPrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfLocationListPtrFormPrivate()
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfLocationListPtrFormPrivate(const DwarfLocationListPtrFormPrivate &priv)
+    {
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
+DwarfLocationListPtrForm::DwarfLocationListPtrForm()
+    : DwarfForm(Class::LocationListPtr)
+    , _p(new DwarfLocationListPtrFormPrivate())
+{
+}
+
+DwarfLocationListPtrForm::~DwarfLocationListPtrForm()
+{
+
+}
+
+DwarfLocationListPtrForm::DwarfLocationListPtrForm(const DwarfLocationListPtrForm &form)
+    : DwarfForm(form)
+{
+    _p.reset(new DwarfLocationListPtrFormPrivate(*form._p));
+}
+
+DwarfLocationListPtrForm::DwarfLocationListPtrForm(DwarfLocationListPtrForm &&form)
+    : DwarfLocationListPtrForm()
+{
+    std::swap(*this, form);
+}
+
+DwarfLocationListPtrForm& DwarfLocationListPtrForm::operator= (DwarfLocationListPtrForm form)
+{
+    std::swap(*this, form);
+    return *this;
+}
+
+void DwarfLocationListPtrForm::swap(DwarfLocationListPtrForm &form)
+{
+    DwarfForm::swap(form);
+    std::swap(_p, form._p);
+}
+
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

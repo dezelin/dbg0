@@ -28,10 +28,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#ifndef DWARFATTRIBUTE_H
+#define DWARFATTRIBUTE_H
 
-#include "symboltable.h"
+#include "attribute.h"
 
 #include <memory>
 
@@ -42,34 +42,42 @@ namespace dwarf
 
 using namespace interfaces;
 
-class DwarfSymbolTable : public SymbolTable
+class DwarfAttribute : public Attribute
 {
 public:
-    DwarfSymbolTable();
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    enum class Class : int {
+        UnknownClass = -1
+    };
 
-    virtual ~DwarfSymbolTable();
+    enum class Type : int {
+        UnknownType = -1
+    };
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
+    DwarfAttribute(Class attrClass = Class::UnknownClass,
+        Type type = Type::UnknownType);
+    virtual ~DwarfAttribute();
 
-    void swap(DwarfSymbolTable& symbolTable);
+    DwarfAttribute(const DwarfAttribute &attr);
+    DwarfAttribute(DwarfAttribute &&attr);
+
+    DwarfAttribute &operator= (DwarfAttribute attr);
+
+    void swap(DwarfAttribute &attr);
 
     //
-    // Interface SymbolTable
+    // Interface Attribute
     //
 
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    virtual int attrClass() const;
+    virtual int type() const;
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
+    class DwarfAttributePrivate;
+    std::unique_ptr<DwarfAttributePrivate> _p;
 };
 
 } // namespace dwarf
 } // namespace dbg0
 
-#endif // DWARFSYMBOLTABLE_H
+#endif // DWARFATTRIBUTE_H

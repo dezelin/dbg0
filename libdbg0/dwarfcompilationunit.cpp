@@ -45,7 +45,6 @@ public:
         , _version(0)
         , _abbrevOffset(0)
         , _addressSize(0)
-        , _type(DwarfDie::Type::CompileUnit)
     {
     }
 
@@ -55,9 +54,6 @@ public:
         _version = priv.version();
         _abbrevOffset = priv.abbrevOffset();
         _addressSize = priv.addressSize();
-
-        _type = priv.type();
-        _children = priv.children();
     }
 
     size_t headerLength() const
@@ -100,39 +96,15 @@ public:
         _addressSize = size;
     }
 
-
-    //
-    // Interface CompilationUnit
-    //
-
-    void add(Die* die)
-    {
-        assert(die);
-        _children.push_back(die);
-    }
-
-    const std::list<Die*>& children() const
-    {
-        return _children;
-    }
-
-    DwarfDie::Type type() const
-    {
-        return _type;
-    }
-
 private:
     size_t _headerLength;
     int _version;
     size_t _abbrevOffset;
     int _addressSize;
-
-    std::list<Die*> _children;
-    DwarfDie::Type _type;
 };
 
 DwarfCompilationUnit::DwarfCompilationUnit()
-    : CompilationUnit()
+    : DwarfDie(DwarfDie::Type::CompileUnit)
     , _p(new DwarfCompilationUnitPrivate())
 {
 }
@@ -142,13 +114,14 @@ DwarfCompilationUnit::~DwarfCompilationUnit()
 }
 
 DwarfCompilationUnit::DwarfCompilationUnit(const DwarfCompilationUnit &cu)
+    : DwarfDie(cu)
 {
     assert(_p);
     _p.reset(new DwarfCompilationUnitPrivate(*cu._p));
 }
 
 DwarfCompilationUnit::DwarfCompilationUnit(DwarfCompilationUnit &&cu)
-    : DwarfCompilationUnit()
+    : DwarfDie()
 {
     std::swap(*this, cu);
 }
@@ -161,6 +134,7 @@ DwarfCompilationUnit &DwarfCompilationUnit::operator =(DwarfCompilationUnit cu)
 
 void DwarfCompilationUnit::swap(DwarfCompilationUnit &cu)
 {
+    DwarfDie::swap(cu);
     std::swap(_p, cu._p);
 }
 
@@ -215,29 +189,6 @@ void DwarfCompilationUnit::setAddressSize(int size)
     assert(_p);
     _p->setAddressSize(size);
 }
-
-//
-// Interface CompilationUnit
-//
-
-void DwarfCompilationUnit::add(Die* die)
-{
-    assert(_p);
-    _p->add(die);
-}
-
-const std::list<Die *> &DwarfCompilationUnit::children() const
-{
-    assert(_p);
-    return _p->children();
-}
-
-int DwarfCompilationUnit::type() const
-{
-    assert(_p);
-    return static_cast<int>(_p->type());
-}
-
 
 } // namespace dwarf
 } // namespace dbg0

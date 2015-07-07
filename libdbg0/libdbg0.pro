@@ -17,7 +17,22 @@ SOURCES += libdbg0.cpp \
     elfexecutable.cpp \
     dwarfsymboltable.cpp \
     dwarfcompilationunit.cpp \
-    dwarfdie.cpp
+    dwarfdie.cpp \
+    dwarfattribute.cpp \
+    dwarfdiefactory.cpp \
+    dwarfattributefactory.cpp \
+    dwarfaddressform.cpp \
+    dwarfform.cpp \
+    dwarfblockform.cpp \
+    dwarfconstantform.cpp \
+    dwarfexpressionlocform.cpp \
+    dwarfflagform.cpp \
+    dwarflineptrform.cpp \
+    dwarflocationlistptrform.cpp \
+    dwarfmacroptrform.cpp \
+    dwarfrangelistptrform.cpp \
+    dwarfreferenceform.cpp \
+    dwarfstringform.cpp
 
 HEADERS += libdbg0.h \
     cpu.h \
@@ -31,7 +46,23 @@ HEADERS += libdbg0.h \
     dwarfsymboltable.h \
     dwarfcompilationunit.h \
     dwarfdie.h \
-    attribute.h
+    attribute.h \
+    dwarfattribute.h \
+    dwarfdiefactory.h \
+    dwarfattributefactory.h \
+    form.h \
+    dwarfaddressform.h \
+    dwarfform.h \
+    dwarfblockform.h \
+    dwarfconstantform.h \
+    dwarfexpressionlocform.h \
+    dwarfflagform.h \
+    dwarflineptrform.h \
+    dwarflocationlistptrform.h \
+    dwarfmacroptrform.h \
+    dwarfrangelistptrform.h \
+    dwarfreferenceform.h \
+    dwarfstringform.h
 
 unix {
     target.path = /usr/lib

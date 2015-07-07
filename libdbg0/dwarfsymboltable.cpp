@@ -28,7 +28,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#include "dwarfattributefactory.h"
 #include "dwarfcompilationunit.h"
+#include "dwarfdiefactory.h"
 #include "dwarfsymboltable.h"
 
 #include <assert.h>
@@ -39,6 +41,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <algorithm>
+#include <initializer_list>
 #include <list>
 
 
@@ -76,7 +80,7 @@ public:
         return err;
     }
 
-    const std::list<CompilationUnit*>& compilationUnits() const
+    const std::list<Die*>& compilationUnits() const
     {
         return _units;
     }
@@ -125,9 +129,20 @@ private:
         return 0;
     }
 
+    void addAttributes(DwarfDie *ddie, std::initializer_list<int> attributes,
+        Dwarf_Die die)
+    {
+        assert(ddie);
+        std::for_each(attributes.begin(), attributes.end(), [&](Dwarf_Half attribute) {
+            DwarfAttribute *attr = getAttribute(die, attribute);
+            if (attr)
+                ddie->add(attr);
+        });
+    }
+
     int addCompilationUnit(Dwarf_Debug dbg, Dwarf_Unsigned headerLength,
         Dwarf_Half version, Dwarf_Unsigned abbrevOffset, Dwarf_Half addressSize,
-        Dwarf_Unsigned nextCuHeader)
+        Dwarf_Unsigned /*nextCuHeader*/)
     {
         int err;
         Dwarf_Error error;
@@ -137,17 +152,29 @@ private:
         if ((err = dwarf_siblingof(dbg, noDie, &cuDie, &error)) != DW_DLV_OK)
             return err;
 
-        std::unique_ptr<DwarfCompilationUnit> cu(new DwarfCompilationUnit());
+        std::unique_ptr<DwarfCompilationUnit> cu(
+            DwarfDieFactory::instance().createCompileUnit());
         cu->setHeaderLength(headerLength);
         cu->setVersion(version);
         cu->setAbbrevOffset(abbrevOffset);
         cu->setAddressSize(addressSize);
 
-        if ((err = addDie(dbg, cu.get(), cuDie)) == DW_DLV_OK)
+        if ((err = addCompilationUnitDie(dbg, cu.get(), cuDie)) == DW_DLV_OK)
             _units.push_back(cu.release());
 
         dwarf_dealloc(dbg, cuDie, DW_DLA_DIE);
         return err;
+    }
+
+    int addCompilationUnitDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, Dwarf_Die die)
+    {
+        assert(cu);
+
+        auto attributes = { DW_AT_low_pc, DW_AT_high_pc, DW_AT_ranges, DW_AT_name,
+            DW_AT_language, DW_AT_stmt_list, DW_AT_macro_info, DW_AT_comp_dir,
+            DW_AT_producer, DW_AT_identifier_case, DW_AT_base_types, DW_AT_use_UTF8,
+            DW_AT_main_subprogram };
+        addAttributes(cu, attributes, die);
     }
 
     int addDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, Dwarf_Die die)
@@ -577,8 +604,28 @@ private:
         return err;
     }
 
+    DwarfAttribute* getAttribute(Dwarf_Die die, Dwarf_Half attribute)
+    {
+        int err;
+        Dwarf_Bool haveAttr;
+        Dwarf_Error error;
+
+        if ((err = dwarf_hasattr(die, attribute, &haveAttr, &error)) != DW_DLV_OK)
+            return nullptr;
+
+        if (!haveAttr)
+            return nullptr;
+
+        Dwarf_Attribute attr;
+        if ((err = dwarf_attr(die, attribute, &attr, &error)) != DW_DLV_OK)
+            return nullptr;
+
+
+
+    }
+
 private:
-    std::list<CompilationUnit*> _units;
+    std::list<Die*> _units;
 };
 
 DwarfSymbolTable::DwarfSymbolTable()
@@ -624,7 +671,7 @@ int DwarfSymbolTable::readSymbolTable(const std::string &fileName)
     return _p->readSymbolTable(fileName);
 }
 
-const std::list<CompilationUnit*>& DwarfSymbolTable::compilationUnits() const
+const std::list<Die*>& DwarfSymbolTable::compilationUnits() const
 {
     assert(_p);
     return _p->compilationUnits();

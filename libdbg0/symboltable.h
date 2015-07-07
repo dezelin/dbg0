@@ -31,7 +31,6 @@
 #ifndef SYMBOLTABLE_H
 #define SYMBOLTABLE_H
 
-#include "compilationunit.h"
 #include "die.h"
 
 #include <list>
@@ -49,7 +48,7 @@ public:
 
     virtual int readSymbolTable(const std::string &fileName) = 0;
 
-    virtual const std::list<CompilationUnit*>& compilationUnits() const = 0;
+    virtual const std::list<Die*>& compilationUnits() const = 0;
 };
 
 } // namespace interfaces

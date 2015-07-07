@@ -163,7 +163,11 @@ public:
     // Interface
     //
 
+    virtual void add(Attribute* attribute);
+
     virtual void add(Die* die);
+
+    virtual const std::list<Attribute*>& attributes() const;
 
     virtual const std::list<Die*>& children() const;
 

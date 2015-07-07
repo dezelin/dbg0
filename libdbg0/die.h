@@ -31,6 +31,8 @@
 #ifndef DIE_H
 #define DIE_H
 
+#include "attribute.h"
+
 #include <list>
 
 namespace dbg0
@@ -41,7 +43,6 @@ namespace interfaces
 class Die
 {
 public:
-    static const int UNKNOWN_TYPE = -1;
 
     virtual ~Die() { }
 
@@ -49,7 +50,11 @@ public:
     // Interface
     //
 
+    virtual void add(Attribute* attribute) = 0;
+
     virtual void add(Die* die) = 0;
+
+    virtual const std::list<Attribute*>& attributes() const = 0;
 
     virtual const std::list<Die*>& children() const = 0;
 

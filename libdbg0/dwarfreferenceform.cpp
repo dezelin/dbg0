@@ -28,48 +28,68 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarfreferenceform.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfReferenceForm::DwarfReferenceFormPrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfReferenceFormPrivate()
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfReferenceFormPrivate(const DwarfReferenceFormPrivate &priv)
+    {
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
+DwarfReferenceForm::DwarfReferenceForm()
+    : DwarfForm(Class::Reference)
+    , _p(new DwarfReferenceFormPrivate())
+{
+}
+
+DwarfReferenceForm::~DwarfReferenceForm()
+{
+
+}
+
+DwarfReferenceForm::DwarfReferenceForm(const DwarfReferenceForm &form)
+    : DwarfForm(form)
+{
+    _p.reset(new DwarfReferenceFormPrivate(*form._p));
+}
+
+DwarfReferenceForm::DwarfReferenceForm(DwarfReferenceForm &&form)
+    : DwarfReferenceForm()
+{
+    std::swap(*this, form);
+}
+
+DwarfReferenceForm& DwarfReferenceForm::operator= (DwarfReferenceForm form)
+{
+    std::swap(*this, form);
+    return *this;
+}
+
+void DwarfReferenceForm::swap(DwarfReferenceForm &form)
+{
+    DwarfForm::swap(form);
+    std::swap(_p, form._p);
+}
+
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

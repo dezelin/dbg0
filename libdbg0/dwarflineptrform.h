@@ -28,10 +28,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#ifndef DWARFLINEPTRFORM_H
+#define DWARFLINEPTRFORM_H
 
-#include "symboltable.h"
+#include "dwarfform.h"
 
 #include <memory>
 
@@ -39,37 +39,31 @@ namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
+using namespace interfaces::forms;
 
-class DwarfSymbolTable : public SymbolTable
+class DwarfLinePtrForm : public DwarfForm
 {
 public:
-    DwarfSymbolTable();
+    DwarfLinePtrForm();
+    virtual ~DwarfLinePtrForm();
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    DwarfLinePtrForm(const DwarfLinePtrForm &form);
+    DwarfLinePtrForm(DwarfLinePtrForm &&form);
 
-    virtual ~DwarfSymbolTable();
+    DwarfLinePtrForm& operator= (DwarfLinePtrForm form);
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    void swap(DwarfLinePtrForm &form);
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
+    class DwarfLinePtrFormPrivate;
+    std::unique_ptr<DwarfLinePtrFormPrivate> _p;
 };
 
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
 
-#endif // DWARFSYMBOLTABLE_H
+#endif // DWARFLINEPTRFORM_H

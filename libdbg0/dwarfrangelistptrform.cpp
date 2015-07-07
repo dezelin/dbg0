@@ -28,48 +28,68 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarfrangelistptrform.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfRangeListPtrForm::DwarfRangeListPtrFormPrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfRangeListPtrFormPrivate()
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfRangeListPtrFormPrivate(const DwarfRangeListPtrFormPrivate &priv)
+    {
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
+DwarfRangeListPtrForm::DwarfRangeListPtrForm()
+    : DwarfForm(Class::RangeListPtr)
+    , _p(new DwarfRangeListPtrFormPrivate())
+{
+}
+
+DwarfRangeListPtrForm::~DwarfRangeListPtrForm()
+{
+
+}
+
+DwarfRangeListPtrForm::DwarfRangeListPtrForm(const DwarfRangeListPtrForm &form)
+    : DwarfForm(form)
+{
+    _p.reset(new DwarfRangeListPtrFormPrivate(*form._p));
+}
+
+DwarfRangeListPtrForm::DwarfRangeListPtrForm(DwarfRangeListPtrForm &&form)
+    : DwarfRangeListPtrForm()
+{
+    std::swap(*this, form);
+}
+
+DwarfRangeListPtrForm& DwarfRangeListPtrForm::operator= (DwarfRangeListPtrForm form)
+{
+    std::swap(*this, form);
+    return *this;
+}
+
+void DwarfRangeListPtrForm::swap(DwarfRangeListPtrForm &form)
+{
+    DwarfForm::swap(form);
+    std::swap(_p, form._p);
+}
+
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

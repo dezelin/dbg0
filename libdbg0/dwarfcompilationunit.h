@@ -31,7 +31,6 @@
 #ifndef DWARFCOMPILATIONUNIT_H
 #define DWARFCOMPILATIONUNIT_H
 
-#include "compilationunit.h"
 #include "dwarfdie.h"
 
 #include <cstddef>
@@ -45,7 +44,7 @@ namespace dwarf
 
 using namespace interfaces;
 
-class DwarfCompilationUnit : public CompilationUnit
+class DwarfCompilationUnit : public DwarfDie
 {
 public:
     DwarfCompilationUnit();
@@ -71,16 +70,6 @@ public:
     void setVersion(int version);
     void setAbbrevOffset(size_t offset);
     void setAddressSize(int size);
-
-    //
-    // Interface CompilationUnit
-    //
-
-    virtual void add(Die* die);
-
-    virtual const std::list<Die*>& children() const;
-
-    virtual int type() const;
 
 private:
     class DwarfCompilationUnitPrivate;

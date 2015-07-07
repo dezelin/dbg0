@@ -28,48 +28,95 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarfattribute.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfAttribute::DwarfAttributePrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfAttributePrivate(DwarfAttribute::Class attrClass, DwarfAttribute::Type type)
+        : _class(attrClass)
+        , _type(type)
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfAttributePrivate(const DwarfAttributePrivate &priv)
+    {
+        _class = priv._class;
+        _type = priv._type;
+    }
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
+    DwarfAttribute::Class attrClass() const
+    {
+        return _class;
+    }
 
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    DwarfAttribute::Type type() const
+    {
+        return _type;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
+    DwarfAttribute::Class _class;
+    DwarfAttribute::Type _type;
 };
+
+DwarfAttribute::DwarfAttribute(Class attrClass, Type type)
+    : Attribute()
+    , _p(new DwarfAttributePrivate(attrClass, type))
+{
+}
+
+DwarfAttribute::~DwarfAttribute()
+{
+
+}
+
+DwarfAttribute::DwarfAttribute(const DwarfAttribute &attr)
+{
+    _p.reset(new DwarfAttributePrivate(*attr._p));
+}
+
+DwarfAttribute::DwarfAttribute(DwarfAttribute &&attr)
+    : DwarfAttribute()
+{
+    std::swap(*this, attr);
+}
+
+DwarfAttribute &DwarfAttribute::operator= (DwarfAttribute attr)
+{
+    std::swap(*this, attr);
+    return *this;
+}
+
+void DwarfAttribute::swap(DwarfAttribute &attr)
+{
+    std::swap(_p, attr._p);
+}
+
+//
+// Interface Attribute
+//
+
+int DwarfAttribute::attrClass() const
+{
+    assert(_p);
+    return static_cast<int>(_p->attrClass());
+}
+
+int DwarfAttribute::type() const
+{
+    assert(_p);
+    return static_cast<int>(_p->type());
+}
+
 
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

@@ -28,48 +28,83 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarfform.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfForm::DwarfFormPrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfFormPrivate(DwarfForm::Class formClass)
+        : _class(formClass)
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfFormPrivate(const DwarfFormPrivate &priv)
+    {
+        _class = priv.formClass();
+    }
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    DwarfForm::Class formClass() const
+    {
+        return _class;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
+    DwarfForm::Class _class;
 };
 
+DwarfForm::DwarfForm(Class formClass)
+    : Form()
+    , _p(new DwarfFormPrivate(formClass))
+{
+}
+
+DwarfForm::~DwarfForm()
+{
+
+}
+
+DwarfForm::DwarfForm(const DwarfForm &form)
+{
+    _p.reset(new DwarfFormPrivate(*form._p));
+}
+
+DwarfForm::DwarfForm(DwarfForm &&form)
+    : DwarfForm()
+{
+    std::swap(*this, form);
+}
+
+DwarfForm& DwarfForm::operator= (DwarfForm form)
+{
+    std::swap(*this, form);
+    return *this;
+}
+
+void DwarfForm::swap(DwarfForm &form)
+{
+    std::swap(_p, form._p);
+}
+
+//
+// Interface Form
+//
+
+int DwarfForm::formClass() const
+{
+    assert(_p);
+    return static_cast<int>(_p->formClass());
+}
+
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

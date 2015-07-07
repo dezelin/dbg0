@@ -28,48 +28,68 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DWARFSYMBOLTABLE_H
-#define DWARFSYMBOLTABLE_H
+#include "dwarflineptrform.h"
 
-#include "symboltable.h"
-
-#include <memory>
+#include <assert.h>
 
 namespace dbg0
 {
 namespace dwarf
 {
+namespace forms
+{
 
-using namespace interfaces;
-
-class DwarfSymbolTable : public SymbolTable
+class DwarfLinePtrForm::DwarfLinePtrFormPrivate
 {
 public:
-    DwarfSymbolTable();
+    DwarfLinePtrFormPrivate()
+    {
 
-    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
-    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+    }
 
-    virtual ~DwarfSymbolTable();
+    DwarfLinePtrFormPrivate(const DwarfLinePtrFormPrivate &priv)
+    {
 
-    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
-
-    void swap(DwarfSymbolTable& symbolTable);
-
-    //
-    // Interface SymbolTable
-    //
-
-    virtual int readSymbolTable(const std::string &fileName);
-
-    virtual const std::list<Die*>& compilationUnits() const;
+    }
 
 private:
-    class DwarfSymbolTablePrivate;
-    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
+DwarfLinePtrForm::DwarfLinePtrForm()
+    : DwarfForm(Class::LinePtr)
+    , _p(new DwarfLinePtrFormPrivate())
+{
+}
+
+DwarfLinePtrForm::~DwarfLinePtrForm()
+{
+
+}
+
+DwarfLinePtrForm::DwarfLinePtrForm(const DwarfLinePtrForm &form)
+    : DwarfForm(form)
+{
+    _p.reset(new DwarfLinePtrFormPrivate(*form._p));
+}
+
+DwarfLinePtrForm::DwarfLinePtrForm(DwarfLinePtrForm &&form)
+    : DwarfLinePtrForm()
+{
+    std::swap(*this, form);
+}
+
+DwarfLinePtrForm& DwarfLinePtrForm::operator= (DwarfLinePtrForm form)
+{
+    std::swap(*this, form);
+    return *this;
+}
+
+void DwarfLinePtrForm::swap(DwarfLinePtrForm &form)
+{
+    DwarfForm::swap(form);
+    std::swap(_p, form._p);
+}
+
+} // namespace forms
 } // namespace dwarf
 } // namespace dbg0
-
-#endif // DWARFSYMBOLTABLE_H

@@ -40,9 +40,6 @@ class Attribute
 {
 public:
 
-    static const int UNKNOWN_CLASS = -1;
-    static const int UNKNOWN_TYPE = -1;
-
     virtual ~Attribute() { }
 
     //
