@@ -28,35 +28,48 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef SYMBOLFILE_H
-#define SYMBOLFILE_H
+#ifndef DWARFSYMBOLTABLE_H
+#define DWARFSYMBOLTABLE_H
 
 #include "symboltable.h"
 
-#include <string>
+#include <memory>
 
 namespace dbg0
 {
-namespace interfaces
+namespace dwarf
 {
 
-class SymbolFile
+using namespace interfaces;
+
+class DwarfSymbolTable : public SymbolTable
 {
 public:
-    virtual ~SymbolFile() {}
+    DwarfSymbolTable();
+
+    DwarfSymbolTable(const DwarfSymbolTable& symbolTable);
+    DwarfSymbolTable(DwarfSymbolTable&& symbolTable);
+
+    virtual ~DwarfSymbolTable();
+
+    DwarfSymbolTable& operator= (DwarfSymbolTable symbolTable);
+
+    void swap(DwarfSymbolTable& symbolTable);
 
     //
-    // Interface
+    // Interface SymbolTable
     //
 
-    virtual int readSymbolTable(const std::string &fileName) = 0;
+    virtual int readSymbolTable(const std::string &fileName);
 
-    virtual std::string fileName() const = 0;
+    virtual const std::list<CompilationUnit*>& compilationUnits() const;
 
-    virtual SymbolTable* symbolTable() const = 0;
+private:
+    class DwarfSymbolTablePrivate;
+    std::unique_ptr<DwarfSymbolTablePrivate> _p;
 };
 
-} // namespace interfaces
+} // namespace dwarf
 } // namespace dbg0
 
-#endif // SYMBOLFILE_H
+#endif // DWARFSYMBOLTABLE_H

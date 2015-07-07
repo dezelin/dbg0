@@ -31,6 +31,12 @@
 #ifndef SYMBOLTABLE_H
 #define SYMBOLTABLE_H
 
+#include "compilationunit.h"
+#include "die.h"
+
+#include <list>
+#include <string>
+
 namespace dbg0
 {
 namespace interfaces
@@ -40,6 +46,10 @@ class SymbolTable
 {
 public:
     virtual ~SymbolTable() {}
+
+    virtual int readSymbolTable(const std::string &fileName) = 0;
+
+    virtual const std::list<CompilationUnit*>& compilationUnits() const = 0;
 };
 
 } // namespace interfaces

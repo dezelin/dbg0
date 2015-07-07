@@ -28,35 +28,60 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef SYMBOLFILE_H
-#define SYMBOLFILE_H
+#ifndef ELFEXECUTABLE_H
+#define ELFEXECUTABLE_H
 
+#include "executable.h"
 #include "symboltable.h"
 
-#include <string>
+#include <memory>
 
 namespace dbg0
 {
-namespace interfaces
+namespace elf
 {
 
-class SymbolFile
+using namespace interfaces;
+
+class ElfExecutable : public Executable
 {
 public:
-    virtual ~SymbolFile() {}
+    enum SymbolTableReader {
+        DWARF = 0
+    };
+
+    ElfExecutable(SymbolTableReader reader = DWARF);
+    virtual ~ElfExecutable();
+
+    ElfExecutable(const ElfExecutable& exec);
+    ElfExecutable(ElfExecutable&& exec);
+
+    ElfExecutable& operator=(ElfExecutable exec);
+
+    void swap(ElfExecutable& exec);
 
     //
-    // Interface
+    // Properties
     //
 
-    virtual int readSymbolTable(const std::string &fileName) = 0;
+    SymbolTableReader readerType() const;
 
-    virtual std::string fileName() const = 0;
+    //
+    // Interface Executable
+    //
 
-    virtual SymbolTable* symbolTable() const = 0;
+    virtual int readSymbolTable(const std::string &fileName);
+
+    virtual std::string fileName() const;
+
+    virtual SymbolTable* symbolTable() const;
+
+private:
+    class ElfExecutablePrivate;
+    std::unique_ptr<ElfExecutablePrivate> _p;
 };
 
-} // namespace interfaces
+} // namespace elf
 } // namespace dbg0
 
-#endif // SYMBOLFILE_H
+#endif // ELFEXECUTABLE_H

@@ -28,35 +28,64 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef SYMBOLFILE_H
-#define SYMBOLFILE_H
+#ifndef DWARFCOMPILATIONUNIT_H
+#define DWARFCOMPILATIONUNIT_H
 
-#include "symboltable.h"
+#include "compilationunit.h"
+#include "dwarfdie.h"
 
-#include <string>
+#include <cstddef>
+#include <list>
+#include <memory>
 
 namespace dbg0
 {
-namespace interfaces
+namespace dwarf
 {
 
-class SymbolFile
+using namespace interfaces;
+
+class DwarfCompilationUnit : public CompilationUnit
 {
 public:
-    virtual ~SymbolFile() {}
+    DwarfCompilationUnit();
+    virtual ~DwarfCompilationUnit();
+
+    DwarfCompilationUnit(const DwarfCompilationUnit &cu);
+    DwarfCompilationUnit(DwarfCompilationUnit &&cu);
+
+    DwarfCompilationUnit &operator =(DwarfCompilationUnit cu);
+
+    void swap(DwarfCompilationUnit &cu);
 
     //
-    // Interface
+    // Properties
     //
 
-    virtual int readSymbolTable(const std::string &fileName) = 0;
+    size_t headerLength() const;
+    int version() const;
+    size_t abbrevOffset() const;
+    int addressSize() const;
 
-    virtual std::string fileName() const = 0;
+    void setHeaderLength(size_t length);
+    void setVersion(int version);
+    void setAbbrevOffset(size_t offset);
+    void setAddressSize(int size);
 
-    virtual SymbolTable* symbolTable() const = 0;
+    //
+    // Interface CompilationUnit
+    //
+
+    virtual void add(Die* die);
+
+    virtual const std::list<Die*>& dies() const;
+
+private:
+    class DwarfCompilationUnitPrivate;
+    std::unique_ptr<DwarfCompilationUnitPrivate> _p;
 };
 
-} // namespace interfaces
+} // namespace dwarf
 } // namespace dbg0
 
-#endif // SYMBOLFILE_H
+#endif // DWARFCOMPILATIONUNIT_H

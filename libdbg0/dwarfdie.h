@@ -28,35 +28,25 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef SYMBOLFILE_H
-#define SYMBOLFILE_H
+#ifndef DWARFDIE_H
+#define DWARFDIE_H
 
-#include "symboltable.h"
-
-#include <string>
+#include <die.h>
 
 namespace dbg0
 {
-namespace interfaces
+namespace dwarf
 {
 
-class SymbolFile
+using namespace interfaces;
+
+class DwarfDie : public Die
 {
 public:
-    virtual ~SymbolFile() {}
-
-    //
-    // Interface
-    //
-
-    virtual int readSymbolTable(const std::string &fileName) = 0;
-
-    virtual std::string fileName() const = 0;
-
-    virtual SymbolTable* symbolTable() const = 0;
+    DwarfDie();
 };
 
-} // namespace interfaces
+} // namespace dwarf
 } // namespace dbg0
 
-#endif // SYMBOLFILE_H
+#endif // DWARFDIE_H
