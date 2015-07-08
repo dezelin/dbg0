@@ -31,12 +31,16 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
+#include "form.h"
+
 namespace dbg0
 {
 namespace interfaces
 {
 namespace attributes
 {
+
+using namespace forms;
 
 class Attribute
 {
@@ -48,7 +52,8 @@ public:
     // Interface
     //
 
-    virtual int attrClass() const = 0;
+    virtual Form* form() const = 0;
+
     virtual int type() const = 0;
 
 };

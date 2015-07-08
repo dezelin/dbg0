@@ -56,14 +56,17 @@ public:
       UnknownType = -1
     };
 
-    union byte {
-        char s;
-        unsigned char u;
+    union Constant {
+        int64_t s;
+        u_int64_t u;
     };
 
-    DwarfConstantForm(Type type = Type::Unsigned);
-    DwarfConstantForm(const std::vector<char> &constant);
-    DwarfConstantForm(const std::vector<unsigned char> &constant);
+
+    DwarfConstantForm(Type = Type::Signed);
+
+    explicit DwarfConstantForm(int64_t c);
+    explicit DwarfConstantForm(u_int64_t c);
+
     virtual ~DwarfConstantForm();
 
     DwarfConstantForm(const DwarfConstantForm &form);
@@ -77,7 +80,7 @@ public:
     // Properties
     //
 
-    const std::vector<byte> &constant() const;
+    Constant constant() const;
 
     Type type() const;
 

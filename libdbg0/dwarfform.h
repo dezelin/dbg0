@@ -54,6 +54,10 @@ public:
         Constant,
         ExpressionLoc,
         Flag,
+        // DW_FORM_CLASS_FRAMEPTR is MIPS/IRIX only, and refers
+        // to the DW_AT_MIPS_fde attribute (a reference to the
+        // .debug_frame section).
+        FramePtr,
         LinePtr,
         LocationListPtr,
         MacroPtr,

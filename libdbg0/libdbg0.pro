@@ -32,7 +32,8 @@ SOURCES += libdbg0.cpp \
     dwarfmacroptrform.cpp \
     dwarfrangelistptrform.cpp \
     dwarfreferenceform.cpp \
-    dwarfstringform.cpp
+    dwarfstringform.cpp \
+    dwarfformfactory.cpp
 
 HEADERS += libdbg0.h \
     cpu.h \
@@ -62,7 +63,8 @@ HEADERS += libdbg0.h \
     dwarfmacroptrform.h \
     dwarfrangelistptrform.h \
     dwarfreferenceform.h \
-    dwarfstringform.h
+    dwarfstringform.h \
+    dwarfformfactory.h
 
 unix {
     target.path = /usr/lib

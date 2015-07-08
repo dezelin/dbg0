@@ -32,6 +32,7 @@
 #define DWARFATTRIBUTEFACTORY_H
 
 #include "dwarfattribute.h"
+#include "dwarfform.h"
 
 namespace dbg0
 {
@@ -41,6 +42,7 @@ namespace factories
 {
 
 using namespace attributes;
+using namespace forms;
 
 class DwarfAttributeFactory
 {
@@ -49,7 +51,7 @@ public:
     // Singleton instance
     static DwarfAttributeFactory& instance();
 
-    DwarfAttribute* createDie(DwarfAttribute::Type type) const;
+    DwarfAttribute* create(DwarfAttribute::Type type, DwarfForm *form) const;
 
 private:
     // Non-copyable

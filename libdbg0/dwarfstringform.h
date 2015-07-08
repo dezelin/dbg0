@@ -49,6 +49,7 @@ class DwarfStringForm : public DwarfForm
 {
 public:
     DwarfStringForm();
+    DwarfStringForm(char *s);
     DwarfStringForm(const std::string &string);
     virtual ~DwarfStringForm();
 

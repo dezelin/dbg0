@@ -28,9 +28,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "dwarfattributefactory.h"
+#ifndef DWARFFORMFACTORY_H
+#define DWARFFORMFACTORY_H
 
-#include "dwarfattribute.h"
+#include "dwarfform.h"
 
 namespace dbg0
 {
@@ -39,25 +40,45 @@ namespace dwarf
 namespace factories
 {
 
-DwarfAttributeFactory::DwarfAttributeFactory()
-{
+using namespace forms;
 
-}
-
-DwarfAttributeFactory& DwarfAttributeFactory::instance()
+class DwarfFormFactory
 {
-    // C++11 doesn't need double-check locking.
-    // This is enough to be thread-safe
-    static DwarfAttributeFactory factory;
-    return factory;
-}
+public:
 
-DwarfAttribute* DwarfAttributeFactory::create(DwarfAttribute::Type type,
-    DwarfForm *form) const
-{
-    return new DwarfAttribute(type, form);
-}
+    // Singleton instance
+    static DwarfFormFactory& instance();
+
+    DwarfForm* clone(DwarfForm *form) const;
+    DwarfForm* create(DwarfForm::Class _class) const;
+    DwarfForm* createAddress(void *address) const;
+    DwarfForm* createBlock(size_t len, void *blockData) const;
+    DwarfForm* createExpressionLoc(size_t len, void *blockData) const;
+    DwarfForm* createFlag(bool flag) const;
+    DwarfForm* createLinePtr(size_t offset) const;
+    DwarfForm* createLocationListPtr(size_t offset) const;
+    DwarfForm* createMacroPtr(size_t offset) const;
+    DwarfForm* createRangeListPtr(size_t offset) const;
+    DwarfForm* createString(char *s) const;
+
+    // References
+    DwarfForm* createLocalReference(size_t offset) const;
+    DwarfForm* createGlobalReference(size_t offset) const;
+    DwarfForm* createSharedReference(u_int64_t offset) const;
+
+    // Constants
+    DwarfForm* createSignedConstant(int64_t sconst) const;
+    DwarfForm* createUnsignedConstant(u_int64_t uconst) const;
+
+private:
+    // Non-copyable
+    DwarfFormFactory();
+    DwarfFormFactory(const DwarfFormFactory&) = delete;
+    DwarfFormFactory &operator= (const DwarfFormFactory&) = delete;
+};
 
 } // namespace factories
 } // namespace dwarf
 } // namespace dbg0
+
+#endif // DWARFFORMFACTORY_H

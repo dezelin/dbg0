@@ -29,8 +29,11 @@
 //
 
 #include "dwarfattribute.h"
+#include "dwarfform.h"
+#include "dwarfformfactory.h"
 
 #include <assert.h>
+#include <memory>
 
 namespace dbg0
 {
@@ -39,11 +42,14 @@ namespace dwarf
 namespace attributes
 {
 
+using namespace factories;
+using namespace forms;
+
 class DwarfAttribute::DwarfAttributePrivate
 {
 public:
-    DwarfAttributePrivate(DwarfAttribute::Class attrClass, DwarfAttribute::Type type)
-        : _class(attrClass)
+    DwarfAttributePrivate(DwarfAttribute::Type type, DwarfForm *form)
+        : _form(form)
         , _type(type)
     {
 
@@ -51,13 +57,17 @@ public:
 
     DwarfAttributePrivate(const DwarfAttributePrivate &priv)
     {
-        _class = priv._class;
+        _form.reset(DwarfFormFactory::instance().clone(priv._form.get()));
         _type = priv._type;
     }
 
-    DwarfAttribute::Class attrClass() const
+    //
+    // Interface Attribute
+    //
+
+    Form* form() const
     {
-        return _class;
+        return _form.get();
     }
 
     DwarfAttribute::Type type() const
@@ -66,13 +76,13 @@ public:
     }
 
 private:
-    DwarfAttribute::Class _class;
+    std::unique_ptr<DwarfForm> _form;
     DwarfAttribute::Type _type;
 };
 
-DwarfAttribute::DwarfAttribute(Class attrClass, Type type)
+DwarfAttribute::DwarfAttribute(Type type, DwarfForm *from)
     : Attribute()
-    , _p(new DwarfAttributePrivate(attrClass, type))
+    , _p(new DwarfAttributePrivate(type, from))
 {
 }
 
@@ -107,10 +117,10 @@ void DwarfAttribute::swap(DwarfAttribute &attr)
 // Interface Attribute
 //
 
-int DwarfAttribute::attrClass() const
+Form* DwarfAttribute::form() const
 {
     assert(_p);
-    return static_cast<int>(_p->attrClass());
+    return _p->form();
 }
 
 int DwarfAttribute::type() const

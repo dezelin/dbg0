@@ -47,8 +47,9 @@ public:
 
     }
 
-    DwarfExpressionLocFormPrivate(const std::vector<char> &exprloc)
-        : _exprloc(exprloc)
+    template<class InputIterator>
+    DwarfExpressionLocFormPrivate(InputIterator first, InputIterator last)
+        : _exprloc(first, last)
     {
 
     }
@@ -73,9 +74,9 @@ DwarfExpressionLocForm::DwarfExpressionLocForm()
 {
 }
 
-DwarfExpressionLocForm::DwarfExpressionLocForm(const std::vector<char> &exprloc)
+DwarfExpressionLocForm::DwarfExpressionLocForm(char *first, char *last)
     : DwarfForm(Class::ExpressionLoc)
-    , _p(new DwarfExpressionLocFormPrivate(exprloc))
+    , _p(new DwarfExpressionLocFormPrivate(first, last))
 {
 }
 

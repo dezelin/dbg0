@@ -31,7 +31,21 @@
 #include "dwarfattributefactory.h"
 #include "dwarfcompilationunit.h"
 #include "dwarfdiefactory.h"
+#include "dwarfform.h"
+#include "dwarfformfactory.h"
 #include "dwarfsymboltable.h"
+
+#include "dwarfaddressform.h"
+#include "dwarfblockform.h"
+#include "dwarfconstantform.h"
+#include "dwarfexpressionlocform.h"
+#include "dwarfflagform.h"
+#include "dwarflineptrform.h"
+#include "dwarflocationlistptrform.h"
+#include "dwarfmacroptrform.h"
+#include "dwarfrangelistptrform.h"
+#include "dwarfreferenceform.h"
+#include "dwarfstringform.h"
 
 #include <assert.h>
 #include <dwarf.h>
@@ -56,6 +70,7 @@ namespace symbols
 using namespace attributes;
 using namespace dies;
 using namespace factories;
+using namespace forms;
 
 class DwarfSymbolTable::DwarfSymbolTablePrivate
 {
@@ -104,10 +119,12 @@ private:
         Dwarf_Half version;
         Dwarf_Unsigned abbrevOffset;
         Dwarf_Half addressSize;
-        Dwarf_Unsigned nextCuHeader;
+        Dwarf_Unsigned cuHeader, nextCuHeader = 0;
 
         while(err == DW_DLV_OK) {
             // Get next compilation unit
+            cuHeader = nextCuHeader;
+
             if ((err = dwarf_next_cu_header(dbg, &headerLength, &version,
                 &abbrevOffset, &addressSize, &nextCuHeader, &error)) != DW_DLV_OK)
             {
@@ -116,7 +133,7 @@ private:
             }
 
             if ((err = addCompilationUnit(dbg, headerLength, version,
-                abbrevOffset, addressSize, nextCuHeader)) != DW_DLV_OK)
+                abbrevOffset, addressSize, cuHeader)) != DW_DLV_OK)
             {
                 // Error
                 break;
@@ -135,12 +152,13 @@ private:
         return 0;
     }
 
-    void addAttributes(DwarfDie *ddie, std::initializer_list<int> attributes,
-        Dwarf_Die die)
+    void addAttributes(DwarfCompilationUnit *cu, DwarfDie *ddie,
+        std::initializer_list<int> attributes, Dwarf_Die die)
     {
+        assert(cu);
         assert(ddie);
         std::for_each(attributes.begin(), attributes.end(), [&](Dwarf_Half attribute) {
-            DwarfAttribute *attr = getAttribute(die, attribute);
+            DwarfAttribute *attr = getAttribute(cu, die, attribute);
             if (attr)
                 ddie->add(attr);
         });
@@ -148,7 +166,7 @@ private:
 
     int addCompilationUnit(Dwarf_Debug dbg, Dwarf_Unsigned headerLength,
         Dwarf_Half version, Dwarf_Unsigned abbrevOffset, Dwarf_Half addressSize,
-        Dwarf_Unsigned /*nextCuHeader*/)
+        Dwarf_Off cuHeaderOffset)
     {
         int err;
         Dwarf_Error error;
@@ -158,9 +176,18 @@ private:
         if ((err = dwarf_siblingof(dbg, noDie, &cuDie, &error)) != DW_DLV_OK)
             return err;
 
+        Dwarf_Off cuDieOffset;
+        if ((err = dwarf_get_cu_die_offset_given_cu_header_offset(dbg, cuHeaderOffset,
+            &cuDieOffset, &error)) != DW_DLV_OK)
+        {
+            return err;
+        }
+
         std::unique_ptr<DwarfCompilationUnit> cu(
             DwarfDieFactory::instance().createCompileUnit());
+        cu->setDieOffset(cuDieOffset);
         cu->setHeaderLength(headerLength);
+        cu->setHeaderOffset(cuHeaderOffset);
         cu->setVersion(version);
         cu->setAbbrevOffset(abbrevOffset);
         cu->setAddressSize(addressSize);
@@ -180,7 +207,7 @@ private:
             DW_AT_language, DW_AT_stmt_list, DW_AT_macro_info, DW_AT_comp_dir,
             DW_AT_producer, DW_AT_identifier_case, DW_AT_base_types, DW_AT_use_UTF8,
             DW_AT_main_subprogram };
-        addAttributes(cu, attributes, die);
+        addAttributes(cu, cu, attributes, die);
     }
 
     int addDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, Dwarf_Die die)
@@ -610,8 +637,11 @@ private:
         return err;
     }
 
-    DwarfAttribute* getAttribute(Dwarf_Die die, Dwarf_Half attribute)
+    DwarfAttribute* getAttribute(DwarfCompilationUnit *cu, Dwarf_Die die,
+        Dwarf_Half attribute)
     {
+        assert(cu);
+
         int err;
         Dwarf_Bool haveAttr;
         Dwarf_Error error;
@@ -626,7 +656,347 @@ private:
         if ((err = dwarf_attr(die, attribute, &attr, &error)) != DW_DLV_OK)
             return nullptr;
 
+        DwarfForm::Class _class = getAttributeFormClass(attr, cu->dieOffset());
+        if (_class == DwarfForm::Class::UnknownClass)
+            return nullptr;
 
+        DwarfAttribute::Type _type = getAttributeType(attribute);
+        if (_type == DwarfAttribute::Type::UnknownType)
+            return nullptr;
+
+        std::unique_ptr<DwarfForm> _form;
+        switch (_class)
+        {
+        case DwarfForm::Class::Address: {
+            Dwarf_Addr addr;
+            if ((err = dwarf_formaddr(attr, &addr, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            // Address can be nullptr
+            _form.reset(DwarfFormFactory::instance().createAddress(
+                reinterpret_cast<void*>(addr)));
+            break;
+        }
+        case DwarfForm::Class::Block: {
+            Dwarf_Block *block;
+            if ((err = dwarf_formblock(attr, &block, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            assert(block);
+            if (!block) return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createBlock(block->bl_len,
+                block->bl_data));
+            break;
+        }
+        case DwarfForm::Class::Constant: {
+            Dwarf_Half formType;
+            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            if (formType == DW_FORM_data1 || formType == DW_FORM_data2 ||
+                formType == DW_FORM_data4 || formType == DW_FORM_data8 ||
+                formType == DW_FORM_udata)
+            {
+                Dwarf_Unsigned udata;
+                if ((err = dwarf_formudata(attr, &udata, &error)) != DW_DLV_OK)
+                    return nullptr;
+
+                _form.reset(DwarfFormFactory::instance().createUnsignedConstant(udata));
+            }
+            else if (formType == DW_FORM_sdata) {
+                Dwarf_Signed sdata;
+                if ((err = dwarf_formsdata(attr, &sdata, &error)) != DW_DLV_OK)
+                    return nullptr;
+
+                _form.reset(DwarfFormFactory::instance().createSignedConstant(sdata));
+            }
+            else {
+                assert(!"Unsupported form type.");
+                return nullptr;
+            }
+
+            break;
+        }
+        case DwarfForm::Class::ExpressionLoc: {
+            Dwarf_Unsigned len;
+            Dwarf_Ptr block;
+            if ((err = dwarf_formexprloc(attr, &len, &block, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            assert(len > 0);
+            assert(block);
+            if (len < 1 || !block) return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createExpressionLoc(len, block));
+            break;
+        }
+        case DwarfForm::Class::Flag: {
+            Dwarf_Bool flag;
+            if ((err = dwarf_formflag(attr, &flag, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createFlag(flag));
+            break;
+        }
+        case DwarfForm::Class::LinePtr: {
+            // Reference to .debug_line section
+            Dwarf_Off offset;
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createLinePtr(offset));
+            break;
+        }
+        case DwarfForm::Class::LocationListPtr: {
+            // Reference to .debug_loc section
+            Dwarf_Off offset;
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createLocationListPtr(offset));
+            break;
+        }
+        case DwarfForm::Class::MacroPtr: {
+            // Reference to .debug_macinfo section
+            Dwarf_Off offset;
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createMacroPtr(offset));
+            break;
+        }
+        case DwarfForm::Class::RangeListPtr: {
+            // Reference to .debug_ranges section
+            Dwarf_Off offset;
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createRangeListPtr(offset));
+            break;
+        }
+        case DwarfForm::Class::Reference: {
+            Dwarf_Half formType;
+            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            if (formType == DW_FORM_ref1 || formType == DW_FORM_ref2 ||
+                formType == DW_FORM_ref4 || formType == DW_FORM_ref8 ||
+                formType == DW_FORM_ref_udata)
+            {
+                // Reference to the same CU
+                Dwarf_Off offset;
+                if ((err = dwarf_formref(attr, &offset, &error)) != DW_DLV_OK)
+                    return nullptr;
+
+                _form.reset(DwarfFormFactory::instance().createLocalReference(offset));
+            }
+            else if (formType == DW_FORM_ref_addr) {
+                // Reference to .debug_info section of the same executable
+                Dwarf_Off offset;
+                if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+                    return nullptr;
+
+                _form.reset(DwarfFormFactory::instance().createGlobalReference(offset));
+            }
+            else if (formType == DW_FORM_ref_sig8 ) {
+                // Reference to another symbol table using 8-byte hash
+                Dwarf_Sig8 sig8; // 8-byte hash
+                if ((err = dwarf_formsig8(attr, &sig8, &error)) != DW_DLV_OK)
+                    return nullptr;
+
+                _form.reset(DwarfFormFactory::instance().createSharedReference(
+                    reinterpret_cast<u_int64_t>(sig8.signature)));
+            }
+            else {
+                assert(!"Unsupported form type.");
+                return nullptr;
+            }
+
+            break;
+        }
+        case DwarfForm::Class::String: {
+            Dwarf_Half formType;
+            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            char *string = nullptr;
+            if ((err = dwarf_formstring(attr, &string, &error)) != DW_DLV_OK)
+                return nullptr;
+
+            _form.reset(DwarfFormFactory::instance().createString(string));
+            break;
+        }
+        case DwarfForm::Class::FramePtr:
+            // DW_FORM_CLASS_FRAMEPTR is MIPS/IRIX only, and refers
+            // to the DW_AT_MIPS_fde attribute (a reference to the
+            // .debug_frame section).
+        case DwarfForm::Class::UnknownClass:
+        default: {
+            assert(!"Unknown attribute form class.");
+            break;
+        }
+        }
+
+        std::unique_ptr<DwarfAttribute> _attr(DwarfAttributeFactory::instance().create(
+            _type, _form.release()));
+
+        return _attr.release();
+    }
+
+    DwarfForm::Class getAttributeFormClass(Dwarf_Attribute attr, Dwarf_Half cuOffset)
+    {
+        int err;
+        Dwarf_Half attrType;
+        Dwarf_Half formType;
+        Dwarf_Error error;
+        if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+            return DwarfForm::Class::UnknownClass;
+
+        if ((err = dwarf_whatattr(attr, &attrType, &error)) != DW_DLV_OK)
+            return DwarfForm::Class::UnknownClass;
+
+        Dwarf_Form_Class _class;
+        if ((_class = dwarf_get_form_class(4 /*DWARF4*/, attrType, cuOffset,
+            formType)) == DW_FORM_CLASS_UNKNOWN)
+        {
+            return DwarfForm::Class::UnknownClass;
+        }
+
+        DwarfForm::Class classType = DwarfForm::Class::UnknownClass;
+        switch (_class)
+        {
+        case DW_FORM_CLASS_ADDRESS: {
+            classType = DwarfForm::Class::Address;
+            break;
+        }
+        case DW_FORM_CLASS_BLOCK: {
+            classType = DwarfForm::Class::Block;
+            break;
+        }
+        case DW_FORM_CLASS_CONSTANT: {
+            classType = DwarfForm::Class::Constant;
+            break;
+        }
+        case DW_FORM_CLASS_EXPRLOC: {
+            classType = DwarfForm::Class::ExpressionLoc;
+            break;
+        }
+        case DW_FORM_CLASS_FLAG: {
+            classType = DwarfForm::Class::Flag;
+            break;
+        }
+        case DW_FORM_CLASS_LINEPTR: {
+            classType = DwarfForm::Class::LinePtr;
+            break;
+        }
+        case DW_FORM_CLASS_LOCLISTPTR: {
+            classType = DwarfForm::Class::LocationListPtr;
+            break;
+        }
+        case DW_FORM_CLASS_MACPTR: {
+            classType = DwarfForm::Class::MacroPtr;
+            break;
+        }
+        case DW_FORM_CLASS_RANGELISTPTR: {
+            classType = DwarfForm::Class::RangeListPtr;
+            break;
+        }
+        case DW_FORM_CLASS_REFERENCE: {
+            classType = DwarfForm::Class::Reference;
+            break;
+        }
+        case DW_FORM_CLASS_STRING: {
+            classType = DwarfForm::Class::String;
+            break;
+        }
+        case DW_FORM_CLASS_FRAMEPTR: {
+            // DW_FORM_CLASS_FRAMEPTR is MIPS/IRIX only, and refers
+            // to the DW_AT_MIPS_fde attribute (a reference to the
+            // .debug_frame section).
+            classType = DwarfForm::Class::FramePtr;
+            break;
+        }
+        case DW_FORM_CLASS_UNKNOWN:
+        default: {
+            assert(!"Unknown attribute form class.");
+            break;
+        }
+        }
+
+        return classType;
+    }
+
+    DwarfForm::Class xxxgetAttributeFormClass(Dwarf_Attribute attr)
+    {
+        int err;
+        Dwarf_Half formType;
+        Dwarf_Error error;
+        if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+            return DwarfForm::Class::UnknownClass;
+
+        DwarfForm::Class _class = DwarfForm::Class::UnknownClass;
+
+        switch(formType) {
+        case DW_FORM_addr: {
+            _class = DwarfForm::Class::Address;
+            break;
+        }
+        case DW_FORM_block:
+        case DW_FORM_block1:
+        case DW_FORM_block2:
+        case DW_FORM_block4: {
+            _class = DwarfForm::Class::Block;
+            break;
+        }
+        case DW_FORM_data1:
+        case DW_FORM_data2:
+        case DW_FORM_data4:
+        case DW_FORM_data8:
+        case DW_FORM_sdata:
+        case DW_FORM_udata: {
+            _class = DwarfForm::Class::Constant;
+            break;
+        }
+        case DW_FORM_exprloc: {
+            _class = DwarfForm::Class::ExpressionLoc;
+            break;
+        }
+        case DW_FORM_flag:
+        case DW_FORM_flag_present: {
+            _class = DwarfForm::Class::Flag;
+            break;
+        }
+        case DW_FORM_ref_addr:
+        case DW_FORM_ref1:
+        case DW_FORM_ref2:
+        case DW_FORM_ref4:
+        case DW_FORM_ref8:
+        case DW_FORM_ref_udata:
+        case DW_FORM_ref_sig8: {
+            _class = DwarfForm::Class::Reference;
+            break;
+        }
+        case DW_FORM_strp:
+        case DW_FORM_string: {
+            _class = DwarfForm::Class::String;
+            break;
+        }
+
+        case DW_FORM_indirect:
+        case DW_FORM_sec_offset:
+
+        default: {
+            assert(!"Unknown form type.");
+            break;
+        }
+        }
+
+        return _class;
+    }
+
+    DwarfAttribute::Type getAttributeType(Dwarf_Half attribute)
+    {
 
     }
 

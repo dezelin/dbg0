@@ -47,8 +47,9 @@ public:
 
     }
 
-    DwarfBlockFormPrivate(const std::vector<char> &block)
-        : _block(block)
+    template <class InputIterator>
+    DwarfBlockFormPrivate(InputIterator first, InputIterator last)
+        : _block(first, last)
     {
 
     }
@@ -73,9 +74,9 @@ DwarfBlockForm::DwarfBlockForm()
 {
 }
 
-DwarfBlockForm::DwarfBlockForm(const std::vector<char> &block)
+DwarfBlockForm::DwarfBlockForm(char *first, char *last)
     : DwarfForm(Class::Block)
-    , _p(new DwarfBlockFormPrivate(block))
+    , _p(new DwarfBlockFormPrivate(first, last))
 {
 }
 

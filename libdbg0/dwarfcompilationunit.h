@@ -63,12 +63,16 @@ public:
     // Properties
     //
 
+    size_t dieOffset() const;
     size_t headerLength() const;
+    size_t headerOffset() const;
     int version() const;
     size_t abbrevOffset() const;
     int addressSize() const;
 
+    void setDieOffset(size_t offset);
     void setHeaderLength(size_t length);
+    void setHeaderOffset(size_t offset);
     void setVersion(int version);
     void setAbbrevOffset(size_t offset);
     void setAddressSize(int size);

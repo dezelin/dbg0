@@ -43,7 +43,9 @@ class DwarfCompilationUnit::DwarfCompilationUnitPrivate
 {
 public:
     DwarfCompilationUnitPrivate()
-        : _headerLength(0)
+        : _dieOffset(0)
+        , _headerLength(0)
+        , _headerOffset(0)
         , _version(0)
         , _abbrevOffset(0)
         , _addressSize(0)
@@ -52,15 +54,27 @@ public:
 
     DwarfCompilationUnitPrivate(const DwarfCompilationUnitPrivate &priv)
     {
+        _dieOffset = priv.dieOffset();
         _headerLength = priv.headerLength();
+        _headerOffset = priv.headerOffset();
         _version = priv.version();
         _abbrevOffset = priv.abbrevOffset();
         _addressSize = priv.addressSize();
     }
 
+    size_t dieOffset() const
+    {
+        return _dieOffset;
+    }
+
     size_t headerLength() const
     {
         return _headerLength;
+    }
+
+    size_t headerOffset() const
+    {
+        return _headerOffset;
     }
 
     int version() const
@@ -78,9 +92,19 @@ public:
         return _addressSize;
     }
 
+    void setDieOffset(size_t offset)
+    {
+        _dieOffset = offset;
+    }
+
     void setHeaderLength(size_t length)
     {
         _headerLength = length;
+    }
+
+    void setHeaderOffset(size_t offset)
+    {
+        _headerOffset = offset;
     }
 
     void setVersion(int version)
@@ -99,7 +123,9 @@ public:
     }
 
 private:
+    size_t _dieOffset;
     size_t _headerLength;
+    size_t _headerOffset;
     int _version;
     size_t _abbrevOffset;
     int _addressSize;
@@ -144,10 +170,22 @@ void DwarfCompilationUnit::swap(DwarfCompilationUnit &cu)
 // Properties
 //
 
+size_t DwarfCompilationUnit::dieOffset() const
+{
+    assert(_p);
+    return _p->dieOffset();
+}
+
 size_t DwarfCompilationUnit::headerLength() const
 {
     assert(_p);
     return _p->headerLength();
+}
+
+size_t DwarfCompilationUnit::headerOffset() const
+{
+    assert(_p);
+    return _p->headerOffset();
 }
 
 int DwarfCompilationUnit::version() const
@@ -168,10 +206,22 @@ int DwarfCompilationUnit::addressSize() const
     return _p->addressSize();
 }
 
+void DwarfCompilationUnit::setDieOffset(size_t offset)
+{
+    assert(_p);
+    _p->setDieOffset(offset);
+}
+
 void DwarfCompilationUnit::setHeaderLength(size_t length)
 {
     assert(_p);
     _p->setHeaderLength(length);
+}
+
+void DwarfCompilationUnit::setHeaderOffset(size_t offset)
+{
+    assert(_p);
+    _p->setHeaderOffset(offset);
 }
 
 void DwarfCompilationUnit::setVersion(int version)

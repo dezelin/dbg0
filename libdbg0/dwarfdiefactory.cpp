@@ -55,7 +55,7 @@ DwarfCompilationUnit* DwarfDieFactory::createCompileUnit()
     return new DwarfCompilationUnit();
 }
 
-DwarfDie* DwarfDieFactory::createDie(DwarfDie::Type type) const
+DwarfDie* DwarfDieFactory::create(DwarfDie::Type type) const
 {
     return nullptr;
 }

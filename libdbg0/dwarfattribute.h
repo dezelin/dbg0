@@ -32,6 +32,8 @@
 #define DWARFATTRIBUTE_H
 
 #include "attribute.h"
+#include "dwarfform.h"
+#include "form.h"
 
 #include <memory>
 
@@ -43,21 +45,260 @@ namespace attributes
 {
 
 using namespace interfaces::attributes;
+using namespace interfaces::forms;
+using namespace forms;
 
 class DwarfAttribute : public Attribute
 {
 public:
 
-    enum class Class : int {
-        UnknownClass = -1
-    };
-
     enum class Type : int {
+        Sibling = 0,
+        Location,
+        Name,
+        Ordering,
+        SubscrData,
+        ByteSize,
+        BitOffset,
+        BitSize,
+        ElementList,
+        StatementList,
+        LowPC,
+        HighPC,
+        Language,
+        Member,
+        Discr,
+        DiscrValue,
+        Visibility,
+        Import,
+        StringLength,
+        CommonReference,
+        CompDir,
+        ConstValue,
+        ContainingType,
+        DefaultValue,
+        Inline,
+        IsOptional,
+        LowerBound,
+        Producer,
+        Prototyped,
+        ReturnAddr,
+        StartScope,
+        BitStride,
+        StrideSize, // DWARF2 name
+        UpperBound,
+        AbstractOrigin,
+        Accessibility,
+        AddressClass,
+        Artificial,
+        BaseTypes,
+        CallingConvention,
+        Count,
+        DataMemberLocation,
+        DeclColumn,
+        DeclFile,
+        DeclLine,
+        Declaration,
+        DiscrList,
+        Encoding,
+        External,
+        FrameBase,
+        Friend,
+        IdentifierCase,
+        MacroInfo,
+        NamelistItem,
+        Priority,
+        Segment,
+        Specification,
+        StaticLink,
+        Type,
+        UseLocation,
+        VariableParameter,
+        Virtuality,
+        VTableElemLocation,
+        Allocated,
+        Associated,
+        DataLocation,
+        ByteStride,
+        Stride, // DWARF3 (do not use)
+        EntryPC,
+        UseUTF8,
+        Extension,
+        Ranges,
+        Trampoline,
+        CallColumn,
+        CallFile,
+        CallLine,
+        Description,
+        BinaryScale,
+        DecimalScale,
+        Small,
+        DecimalSign,
+        DigitCount,
+        PictureString,
+        Mutable,
+        ThreadsScaled,
+        Explicit,
+        ObjectPointer,
+        Endianity,
+        Elemental,
+        Pure,
+        Recursive,
+        Signature,
+        MainSubprogram,
+        DataBitOffset,
+        ConstExpr,
+        EnumClass,
+        LinkageName,
+
+        // HP extensions
+        HPBlockIndex,
+        LoUser,
+        MIPSfde,
+        MIPSLoopBegin,
+        MIPSTailLoopBegin,
+        MIPSEpilogBegin,
+        MIPSLoopUnrollFactor,
+        MIPSSoftwarePipelineDepth,
+        MIPSLinkageName,
+        MIPSStride,
+        MIPSAbstractName,
+        MIPSCloneOrigin,
+        MIPSHasInlines,
+        MIPSStrideByte,
+        MIPSStrideElem,
+        MIPSPtrDopetype,
+        MIPSAllocatableDopetype,
+        MIPSAssumedShapeDopetype,
+        MIPSAssumedSize,
+
+        // HP extensions
+        HPUnmodifiable,
+        HPActualsStatementsList,
+        HPProcPerSection,
+        HPRawDataPtr,
+        HPPassByReference,
+        HPOptLevel,
+        HPProfVersionId,
+        HPOptFlags,
+        HPColdRegionLowPC,
+        HPColdRegionHighPC,
+        HPAllVariablesModifiable,
+        HPLinkageName,
+        HPProfFlags,
+        CPQDiscontigRanges,
+        CPQSemanticEvents,
+        CPQSplitLifetimesVar,
+        CPQSplitLifetimesRtn,
+        CPQPrologueLength,
+        INTELOtherEndian,
+
+        // GNU extensions
+        GNUSourceFilesNames,
+        GNUSrcInfo,
+        GNUMacroInfo,
+        GNUSrcCoords,
+        GNUBodyBegin,
+        GNUBodyEnd,
+        GNUVector,
+        GNUGuardedBy,
+        GNUPtGuardedBy,
+        GNUGuarded,
+        GNUPtGuarded,
+        GNULocksExcluded,
+        GNUExclusiveLocksRequired,
+        GNUSharedLocksRequired,
+        GNUOdrSignature,
+        GNUTemplateName,
+        GNUCallSiteValue,
+        GNUCallSiteDataValue,
+        GNUCallSiteTarget,
+        GNUCallSiteTargetClobbered,
+        GNUTailCall,
+        GNUAllTailCallSites,
+        GNUAllCallSites,
+        GNUAllSourceCallSites,
+
+        // ALTIUM extension: ALTIUM Compliant location lists (flag)
+        ALTIUMLoclist,
+
+        // Sun extensions
+        SUNTemplate,
+        VMSRtnbegPdAddress,
+        SUNAlignment,
+        SUNvtable,
+        SUNCountGuarantee,
+        SUNCommandLine,
+        SUNvbase,
+        SUNCompileOptions,
+        SUNLanguage,
+        SUNBrowserFile,
+        SUNvtableABI,
+        SUNFuncOffsets,
+        SUNCfKind,
+        SUNvtableIndex,
+        SUNOmpTprivAddr,
+        SUNOmpChildFunc,
+        SUNFuncOffset,
+        SUNMemopTypeRef,
+        SUNProfileId,
+        SUNMemopSignature,
+        SUNObjDir,
+        SUNObjFile,
+        SUNOriginalName,
+        SUNHwcprofSignature,
+        SUNamd64ParmDump,
+        SUNPartLinkName,
+        SUNLinkName,
+        SUNPassWithConst,
+        SUNReturnWithConst,
+        SUNImportByName,
+        SUNf90Pointer,
+        SUNPassByRef,
+        SUNf90Allocatable,
+        SUNf90AssumedShapeArray,
+        SUNcVla,
+        SUNReturnValuePtr,
+        SUNDtorStart,
+        SUNDtorLength,
+        SUNDtorStateInitial,
+        SUNDtorStateFinal,
+        SUNDtorStateDeltas,
+        SUNImportByLname,
+        SUNf90UseOnly,
+        SUNNamelistSpec,
+        SUNIsOmpChildFunc,
+        SUNFortranMainAlias,
+        SUNFortranBased,
+
+        // GNAT extensions
+        GNATUseDescriptiveType,
+        GNATDescriptiveType,
+
+        // UPC extension
+        UPCThreadsScaled,
+
+        // PGI (STMicroelectronics) extensions
+        PGILocalBase,
+        PGISectionOffset,
+        PGILinearStride,
+
+        // Apple extensions
+        APPLEOptimized,
+        APPLEFlags,
+        APPLEISA,
+        APPLEBlock,
+        APPLEMajorRuntimeVers,
+        APPLERuntimeClass,
+        APPLEOmitFramePtr,
+        APPLEClosure,
+
+        HiUser,
+
         UnknownType = -1
     };
 
-    DwarfAttribute(Class attrClass = Class::UnknownClass,
-        Type type = Type::UnknownType);
+    DwarfAttribute(Type type = Type::UnknownType, DwarfForm *from = nullptr);
     virtual ~DwarfAttribute();
 
     DwarfAttribute(const DwarfAttribute &attr);
@@ -71,7 +312,8 @@ public:
     // Interface Attribute
     //
 
-    virtual int attrClass() const;
+    virtual Form* form() const;
+
     virtual int type() const;
 
 private:

@@ -51,7 +51,7 @@ public:
     static DwarfDieFactory& instance();
 
     DwarfCompilationUnit* createCompileUnit();
-    DwarfDie* createDie(DwarfDie::Type type) const;
+    DwarfDie* create(DwarfDie::Type type) const;
 
 private:
     // Non-copyable

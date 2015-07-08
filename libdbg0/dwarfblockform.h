@@ -49,7 +49,8 @@ class DwarfBlockForm : public DwarfForm
 {
 public:
     DwarfBlockForm();
-    DwarfBlockForm(const std::vector<char> &block);
+    DwarfBlockForm(char *first, char *last);
+
     virtual ~DwarfBlockForm();
 
     DwarfBlockForm(const DwarfBlockForm &form);

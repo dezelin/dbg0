@@ -73,6 +73,12 @@ DwarfStringForm::DwarfStringForm()
 {
 }
 
+DwarfStringForm::DwarfStringForm(char *s)
+    : DwarfForm(Class::String)
+    , _p(new DwarfStringFormPrivate(std::string(s)))
+{
+}
+
 DwarfStringForm::DwarfStringForm(const std::string &string)
     : DwarfForm(Class::String)
     , _p(new DwarfStringFormPrivate(string))

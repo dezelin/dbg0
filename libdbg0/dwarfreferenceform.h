@@ -49,14 +49,14 @@ class DwarfReferenceForm : public DwarfForm
 public:
 
     enum class Type : int {
-        Reference = 0,
-        ReferenceShared,
-        ReferenceType,
+        ReferenceLocal = 0, // Local to CU
+        ReferenceGlobal,    // Reference to .debug_info section
+        ReferenceShared,    // Signature reference to another symbol table
 
         UnknwownType = -1
     };
 
-    DwarfReferenceForm(Type type = Type::Reference, size_t reference = 0);
+    DwarfReferenceForm(Type type = Type::ReferenceLocal, u_int64_t reference = 0);
     virtual ~DwarfReferenceForm();
 
     DwarfReferenceForm(const DwarfReferenceForm &form);
@@ -70,7 +70,9 @@ public:
     // Properties
     //
 
-    size_t reference() const;
+    // Reference type must be minimum 64 bits long
+    // so we can use 8-byte hashes for shared references.
+    u_int64_t reference() const;
 
     Type type() const;
 

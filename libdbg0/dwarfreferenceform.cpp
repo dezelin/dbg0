@@ -42,7 +42,7 @@ namespace forms
 class DwarfReferenceForm::DwarfReferenceFormPrivate
 {
 public:
-    DwarfReferenceFormPrivate(DwarfReferenceForm::Type type, size_t reference)
+    DwarfReferenceFormPrivate(DwarfReferenceForm::Type type, u_int64_t reference)
         : _type(type)
         , _reference(reference)
     {
@@ -55,7 +55,7 @@ public:
         _reference = priv.reference();
     }
 
-    size_t reference() const
+    u_int64_t reference() const
     {
         return _reference;
     }
@@ -67,10 +67,10 @@ public:
 
 private:
     DwarfReferenceForm::Type _type;
-    size_t _reference;
+    u_int64_t _reference;
 };
 
-DwarfReferenceForm::DwarfReferenceForm(Type type, size_t reference)
+DwarfReferenceForm::DwarfReferenceForm(Type type, u_int64_t reference)
     : DwarfForm(Class::Reference)
     , _p(new DwarfReferenceFormPrivate(type, reference))
 {
@@ -111,7 +111,7 @@ void DwarfReferenceForm::swap(DwarfReferenceForm &form)
 // Properties
 //
 
-size_t DwarfReferenceForm::reference() const
+u_int64_t DwarfReferenceForm::reference() const
 {
     assert(_p);
     return _p->reference();

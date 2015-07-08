@@ -58,6 +58,11 @@ public:
         return _address;
     }
 
+    void setAddress(void *address)
+    {
+        _address = address;
+    }
+
 private:
     void *_address;
 };
@@ -107,6 +112,12 @@ void* DwarfAddressForm::address() const
 {
     assert(_p);
     return _p->address();
+}
+
+void DwarfAddressForm::setAddress(void *address)
+{
+    assert(_p);
+    _p->setAddress(address);
 }
 
 } // namespace forms

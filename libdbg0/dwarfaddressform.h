@@ -63,6 +63,8 @@ public:
 
     void* address() const;
 
+    void setAddress(void *address);
+
 private:
     class DwarfAddressFormPrivate;
     std::unique_ptr<DwarfAddressFormPrivate> _p;

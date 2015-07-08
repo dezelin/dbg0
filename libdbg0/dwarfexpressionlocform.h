@@ -49,7 +49,8 @@ class DwarfExpressionLocForm : public DwarfForm
 {
 public:
     DwarfExpressionLocForm();
-    DwarfExpressionLocForm(const std::vector<char> &exprloc);
+    DwarfExpressionLocForm(char *first, char *last);
+
     virtual ~DwarfExpressionLocForm();
 
     DwarfExpressionLocForm(const DwarfExpressionLocForm &form);
