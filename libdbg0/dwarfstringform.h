@@ -34,6 +34,7 @@
 #include "dwarfform.h"
 
 #include <memory>
+#include <string>
 
 namespace dbg0
 {
@@ -48,6 +49,7 @@ class DwarfStringForm : public DwarfForm
 {
 public:
     DwarfStringForm();
+    DwarfStringForm(const std::string &string);
     virtual ~DwarfStringForm();
 
     DwarfStringForm(const DwarfStringForm &form);
@@ -56,6 +58,12 @@ public:
     DwarfStringForm& operator= (DwarfStringForm form);
 
     void swap(DwarfStringForm &form);
+
+    //
+    // Properties
+    //
+
+    const std::string &string() const;
 
 private:
     class DwarfStringFormPrivate;

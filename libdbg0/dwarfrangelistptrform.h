@@ -47,7 +47,7 @@ using namespace interfaces::forms;
 class DwarfRangeListPtrForm : public DwarfForm
 {
 public:
-    DwarfRangeListPtrForm();
+    DwarfRangeListPtrForm(size_t rangelistptr = 0);
     virtual ~DwarfRangeListPtrForm();
 
     DwarfRangeListPtrForm(const DwarfRangeListPtrForm &form);
@@ -56,6 +56,12 @@ public:
     DwarfRangeListPtrForm& operator= (DwarfRangeListPtrForm form);
 
     void swap(DwarfRangeListPtrForm &form);
+
+    //
+    // Properties
+    //
+
+    size_t rangelistptr() const;
 
 private:
     class DwarfRangeListPtrFormPrivate;

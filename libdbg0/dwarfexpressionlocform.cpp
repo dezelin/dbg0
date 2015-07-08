@@ -47,17 +47,35 @@ public:
 
     }
 
-    DwarfExpressionLocFormPrivate(const DwarfExpressionLocFormPrivate &priv)
+    DwarfExpressionLocFormPrivate(const std::vector<char> &exprloc)
+        : _exprloc(exprloc)
     {
 
     }
 
+    DwarfExpressionLocFormPrivate(const DwarfExpressionLocFormPrivate &priv)
+    {
+        _exprloc = priv.exprloc();
+    }
+
+    const std::vector<char> &exprloc() const
+    {
+        return _exprloc;
+    }
+
 private:
+    std::vector<char> _exprloc;
 };
 
 DwarfExpressionLocForm::DwarfExpressionLocForm()
     : DwarfForm(Class::ExpressionLoc)
     , _p(new DwarfExpressionLocFormPrivate())
+{
+}
+
+DwarfExpressionLocForm::DwarfExpressionLocForm(const std::vector<char> &exprloc)
+    : DwarfForm(Class::ExpressionLoc)
+    , _p(new DwarfExpressionLocFormPrivate(exprloc))
 {
 }
 
@@ -69,6 +87,8 @@ DwarfExpressionLocForm::~DwarfExpressionLocForm()
 DwarfExpressionLocForm::DwarfExpressionLocForm(const DwarfExpressionLocForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfExpressionLocFormPrivate(*form._p));
 }
 
@@ -88,6 +108,16 @@ void DwarfExpressionLocForm::swap(DwarfExpressionLocForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+const std::vector<char> &DwarfExpressionLocForm::exprloc() const
+{
+    assert(_p);
+    return _p->exprloc();
 }
 
 } // namespace forms

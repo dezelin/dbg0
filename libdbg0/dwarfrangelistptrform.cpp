@@ -42,22 +42,29 @@ namespace forms
 class DwarfRangeListPtrForm::DwarfRangeListPtrFormPrivate
 {
 public:
-    DwarfRangeListPtrFormPrivate()
+    DwarfRangeListPtrFormPrivate(size_t rangelistptr)
+        : _rangelistptr(rangelistptr)
     {
 
     }
 
     DwarfRangeListPtrFormPrivate(const DwarfRangeListPtrFormPrivate &priv)
     {
+        _rangelistptr = priv.rangelistptr();
+    }
 
+    size_t rangelistptr() const
+    {
+        return _rangelistptr;
     }
 
 private:
+    size_t _rangelistptr;
 };
 
-DwarfRangeListPtrForm::DwarfRangeListPtrForm()
+DwarfRangeListPtrForm::DwarfRangeListPtrForm(size_t rangelistptr)
     : DwarfForm(Class::RangeListPtr)
-    , _p(new DwarfRangeListPtrFormPrivate())
+    , _p(new DwarfRangeListPtrFormPrivate(rangelistptr))
 {
 }
 
@@ -69,6 +76,8 @@ DwarfRangeListPtrForm::~DwarfRangeListPtrForm()
 DwarfRangeListPtrForm::DwarfRangeListPtrForm(const DwarfRangeListPtrForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfRangeListPtrFormPrivate(*form._p));
 }
 
@@ -88,6 +97,16 @@ void DwarfRangeListPtrForm::swap(DwarfRangeListPtrForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+size_t DwarfRangeListPtrForm::rangelistptr() const
+{
+    assert(_p);
+    return _p->rangelistptr();
 }
 
 } // namespace forms

@@ -42,22 +42,29 @@ namespace forms
 class DwarfMacroPtrForm::DwarfMacroPtrFormPrivate
 {
 public:
-    DwarfMacroPtrFormPrivate()
+    DwarfMacroPtrFormPrivate(size_t macptr)
+        : _macptr(macptr)
     {
 
     }
 
     DwarfMacroPtrFormPrivate(const DwarfMacroPtrFormPrivate &priv)
     {
+        _macptr = priv.macptr();
+    }
 
+    size_t macptr() const
+    {
+        return _macptr;
     }
 
 private:
+    size_t _macptr;
 };
 
-DwarfMacroPtrForm::DwarfMacroPtrForm()
+DwarfMacroPtrForm::DwarfMacroPtrForm(size_t macptr)
     : DwarfForm(Class::MacroPtr)
-    , _p(new DwarfMacroPtrFormPrivate())
+    , _p(new DwarfMacroPtrFormPrivate(macptr))
 {
 }
 
@@ -69,6 +76,8 @@ DwarfMacroPtrForm::~DwarfMacroPtrForm()
 DwarfMacroPtrForm::DwarfMacroPtrForm(const DwarfMacroPtrForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfMacroPtrFormPrivate(*form._p));
 }
 
@@ -88,6 +97,16 @@ void DwarfMacroPtrForm::swap(DwarfMacroPtrForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+size_t DwarfMacroPtrForm::macptr() const
+{
+    assert(_p);
+    return _p->macptr();
 }
 
 } // namespace forms

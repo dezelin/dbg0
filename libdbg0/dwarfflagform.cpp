@@ -42,22 +42,29 @@ namespace forms
 class DwarfFlagForm::DwarfFlagFormPrivate
 {
 public:
-    DwarfFlagFormPrivate()
+    DwarfFlagFormPrivate(bool flag)
+        : _flag(flag)
     {
 
     }
 
     DwarfFlagFormPrivate(const DwarfFlagFormPrivate &priv)
     {
+        _flag = priv.flag();
+    }
 
+    bool flag() const
+    {
+        return _flag;
     }
 
 private:
+    bool _flag;
 };
 
-DwarfFlagForm::DwarfFlagForm()
+DwarfFlagForm::DwarfFlagForm(bool flag)
     : DwarfForm(Class::Flag)
-    , _p(new DwarfFlagFormPrivate())
+    , _p(new DwarfFlagFormPrivate(flag))
 {
 }
 
@@ -69,6 +76,8 @@ DwarfFlagForm::~DwarfFlagForm()
 DwarfFlagForm::DwarfFlagForm(const DwarfFlagForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfFlagFormPrivate(*form._p));
 }
 
@@ -88,6 +97,16 @@ void DwarfFlagForm::swap(DwarfFlagForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+bool DwarfFlagForm::flag() const
+{
+    assert(_p);
+    return _p->flag();
 }
 
 } // namespace forms

@@ -47,7 +47,7 @@ using namespace interfaces::forms;
 class DwarfFlagForm : public DwarfForm
 {
 public:
-    DwarfFlagForm();
+    DwarfFlagForm(bool flag = false);
     virtual ~DwarfFlagForm();
 
     DwarfFlagForm(const DwarfFlagForm &form);
@@ -56,6 +56,12 @@ public:
     DwarfFlagForm& operator= (DwarfFlagForm form);
 
     void swap(DwarfFlagForm &form);
+
+    //
+    // Properties
+    //
+
+    bool flag() const;
 
 private:
     class DwarfFlagFormPrivate;

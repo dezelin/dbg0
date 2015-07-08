@@ -42,22 +42,29 @@ namespace forms
 class DwarfLocationListPtrForm::DwarfLocationListPtrFormPrivate
 {
 public:
-    DwarfLocationListPtrFormPrivate()
+    DwarfLocationListPtrFormPrivate(size_t loclistptr)
+        : _loclistptr(loclistptr)
     {
 
     }
 
     DwarfLocationListPtrFormPrivate(const DwarfLocationListPtrFormPrivate &priv)
     {
+        _loclistptr = priv.loclistptr();
+    }
 
+    size_t loclistptr() const
+    {
+        return _loclistptr;
     }
 
 private:
+    size_t _loclistptr;
 };
 
-DwarfLocationListPtrForm::DwarfLocationListPtrForm()
+DwarfLocationListPtrForm::DwarfLocationListPtrForm(size_t loclistptr)
     : DwarfForm(Class::LocationListPtr)
-    , _p(new DwarfLocationListPtrFormPrivate())
+    , _p(new DwarfLocationListPtrFormPrivate(loclistptr))
 {
 }
 
@@ -88,6 +95,16 @@ void DwarfLocationListPtrForm::swap(DwarfLocationListPtrForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+size_t DwarfLocationListPtrForm::loclistptr() const
+{
+    assert(_p);
+    return _p->loclistptr();
 }
 
 } // namespace forms

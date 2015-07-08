@@ -47,17 +47,35 @@ public:
 
     }
 
-    DwarfStringFormPrivate(const DwarfStringFormPrivate &priv)
+    DwarfStringFormPrivate(const std::string &string)
+        : _string(string)
     {
 
     }
 
+    DwarfStringFormPrivate(const DwarfStringFormPrivate &priv)
+    {
+        _string = priv.string();
+    }
+
+    const std::string &string() const
+    {
+        return _string;
+    }
+
 private:
+    std::string _string;
 };
 
 DwarfStringForm::DwarfStringForm()
     : DwarfForm(Class::String)
     , _p(new DwarfStringFormPrivate())
+{
+}
+
+DwarfStringForm::DwarfStringForm(const std::string &string)
+    : DwarfForm(Class::String)
+    , _p(new DwarfStringFormPrivate(string))
 {
 }
 
@@ -69,6 +87,8 @@ DwarfStringForm::~DwarfStringForm()
 DwarfStringForm::DwarfStringForm(const DwarfStringForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfStringFormPrivate(*form._p));
 }
 
@@ -88,6 +108,16 @@ void DwarfStringForm::swap(DwarfStringForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+const std::string &DwarfStringForm::string() const
+{
+    assert(_p);
+    return _p->string();
 }
 
 } // namespace forms

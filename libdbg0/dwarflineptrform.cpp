@@ -42,22 +42,29 @@ namespace forms
 class DwarfLinePtrForm::DwarfLinePtrFormPrivate
 {
 public:
-    DwarfLinePtrFormPrivate()
+    DwarfLinePtrFormPrivate(size_t lineptr)
+        : _lineptr(lineptr)
     {
 
     }
 
     DwarfLinePtrFormPrivate(const DwarfLinePtrFormPrivate &priv)
     {
+        _lineptr = priv.lineptr();
+    }
 
+    size_t lineptr() const
+    {
+        return _lineptr;
     }
 
 private:
+    size_t _lineptr;
 };
 
-DwarfLinePtrForm::DwarfLinePtrForm()
+DwarfLinePtrForm::DwarfLinePtrForm(size_t lineptr)
     : DwarfForm(Class::LinePtr)
-    , _p(new DwarfLinePtrFormPrivate())
+    , _p(new DwarfLinePtrFormPrivate(lineptr))
 {
 }
 
@@ -69,6 +76,8 @@ DwarfLinePtrForm::~DwarfLinePtrForm()
 DwarfLinePtrForm::DwarfLinePtrForm(const DwarfLinePtrForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfLinePtrFormPrivate(*form._p));
 }
 
@@ -88,6 +97,16 @@ void DwarfLinePtrForm::swap(DwarfLinePtrForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+size_t DwarfLinePtrForm::lineptr() const
+{
+    assert(_p);
+    return _p->lineptr();
 }
 
 } // namespace forms

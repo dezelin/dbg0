@@ -42,22 +42,37 @@ namespace forms
 class DwarfReferenceForm::DwarfReferenceFormPrivate
 {
 public:
-    DwarfReferenceFormPrivate()
+    DwarfReferenceFormPrivate(DwarfReferenceForm::Type type, size_t reference)
+        : _type(type)
+        , _reference(reference)
     {
 
     }
 
     DwarfReferenceFormPrivate(const DwarfReferenceFormPrivate &priv)
     {
+        _type = priv.type();
+        _reference = priv.reference();
+    }
 
+    size_t reference() const
+    {
+        return _reference;
+    }
+
+    DwarfReferenceForm::Type type() const
+    {
+        return _type;
     }
 
 private:
+    DwarfReferenceForm::Type _type;
+    size_t _reference;
 };
 
-DwarfReferenceForm::DwarfReferenceForm()
+DwarfReferenceForm::DwarfReferenceForm(Type type, size_t reference)
     : DwarfForm(Class::Reference)
-    , _p(new DwarfReferenceFormPrivate())
+    , _p(new DwarfReferenceFormPrivate(type, reference))
 {
 }
 
@@ -69,6 +84,8 @@ DwarfReferenceForm::~DwarfReferenceForm()
 DwarfReferenceForm::DwarfReferenceForm(const DwarfReferenceForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfReferenceFormPrivate(*form._p));
 }
 
@@ -88,6 +105,22 @@ void DwarfReferenceForm::swap(DwarfReferenceForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+size_t DwarfReferenceForm::reference() const
+{
+    assert(_p);
+    return _p->reference();
+}
+
+DwarfReferenceForm::Type DwarfReferenceForm::type() const
+{
+    assert(_p);
+    return _p->type();
 }
 
 } // namespace forms

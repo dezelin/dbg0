@@ -31,6 +31,7 @@
 #include "dwarfconstantform.h"
 
 #include <assert.h>
+#include <algorithm>
 
 namespace dbg0
 {
@@ -42,22 +43,70 @@ namespace forms
 class DwarfConstantForm::DwarfConstantFormPrivate
 {
 public:
-    DwarfConstantFormPrivate()
+    DwarfConstantFormPrivate(DwarfConstantForm::Type type)
+        : _type(type)
     {
 
+    }
+
+    DwarfConstantFormPrivate(const std::vector<char> &constant,
+        DwarfConstantForm::Type type)
+        : _type(type)
+    {
+        DwarfConstantForm::byte b;
+        std::for_each(constant.begin(), constant.end(), [&](char c) {
+           b.s = c;
+           _constant.push_back(b);
+        });
+    }
+
+    DwarfConstantFormPrivate(const std::vector<unsigned char> &constant,
+        DwarfConstantForm::Type type)
+        : _type(type)
+    {
+        DwarfConstantForm::byte b;
+        std::for_each(constant.begin(), constant.end(), [&](unsigned char c) {
+           b.u = c;
+           _constant.push_back(b);
+        });
     }
 
     DwarfConstantFormPrivate(const DwarfConstantFormPrivate &priv)
     {
+        _type = priv.type();
+        _constant = priv.constant();
+    }
 
+    const std::vector<DwarfConstantForm::byte> &constant() const
+    {
+        return _constant;
+    }
+
+    DwarfConstantForm::Type type() const
+    {
+        return _type;
     }
 
 private:
+    std::vector<DwarfConstantForm::byte> _constant;
+    DwarfConstantForm::Type _type;
 };
 
-DwarfConstantForm::DwarfConstantForm()
+DwarfConstantForm::DwarfConstantForm(Type type)
     : DwarfForm(Class::Constant)
-    , _p(new DwarfConstantFormPrivate())
+    , _p(new DwarfConstantFormPrivate(type))
+{
+}
+
+DwarfConstantForm::DwarfConstantForm(const std::vector<char> &constant)
+    : DwarfForm(Class::Constant)
+    , _p(new DwarfConstantFormPrivate(constant, Type::Signed))
+{
+}
+
+DwarfConstantForm::DwarfConstantForm(const std::vector<unsigned char> &constant)
+    : DwarfForm(Class::Constant)
+    , _p(new DwarfConstantFormPrivate(constant, Type::Unsigned))
 {
 }
 
@@ -69,6 +118,8 @@ DwarfConstantForm::~DwarfConstantForm()
 DwarfConstantForm::DwarfConstantForm(const DwarfConstantForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfConstantFormPrivate(*form._p));
 }
 
@@ -88,6 +139,18 @@ void DwarfConstantForm::swap(DwarfConstantForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+const std::vector<DwarfConstantForm::byte> &DwarfConstantForm::constant() const
+{
+    assert(_p);
+    return _p->constant();
+}
+
+DwarfConstantForm::Type DwarfConstantForm::type() const
+{
+    assert(_p);
+    return _p->type();
 }
 
 } // namespace forms

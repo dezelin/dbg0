@@ -47,7 +47,7 @@ using namespace interfaces::forms;
 class DwarfLocationListPtrForm : public DwarfForm
 {
 public:
-    DwarfLocationListPtrForm();
+    DwarfLocationListPtrForm(size_t loclistptr = 0);
     virtual ~DwarfLocationListPtrForm();
 
     DwarfLocationListPtrForm(const DwarfLocationListPtrForm &form);
@@ -56,6 +56,12 @@ public:
     DwarfLocationListPtrForm& operator= (DwarfLocationListPtrForm form);
 
     void swap(DwarfLocationListPtrForm &form);
+
+    //
+    // Properties
+    //
+
+    size_t loclistptr() const;
 
 private:
     class DwarfLocationListPtrFormPrivate;

@@ -47,7 +47,7 @@ using namespace interfaces::forms;
 class DwarfLinePtrForm : public DwarfForm
 {
 public:
-    DwarfLinePtrForm();
+    DwarfLinePtrForm(size_t lineptr = 0);
     virtual ~DwarfLinePtrForm();
 
     DwarfLinePtrForm(const DwarfLinePtrForm &form);
@@ -56,6 +56,12 @@ public:
     DwarfLinePtrForm& operator= (DwarfLinePtrForm form);
 
     void swap(DwarfLinePtrForm &form);
+
+    //
+    // Properties
+    //
+
+    size_t lineptr() const;
 
 private:
     class DwarfLinePtrFormPrivate;

@@ -47,7 +47,7 @@ using namespace interfaces::forms;
 class DwarfAddressForm : public DwarfForm
 {
 public:
-    DwarfAddressForm();
+    DwarfAddressForm(void *address = nullptr);
     virtual ~DwarfAddressForm();
 
     DwarfAddressForm(const DwarfAddressForm &form);
@@ -56,6 +56,12 @@ public:
     DwarfAddressForm& operator= (DwarfAddressForm form);
 
     void swap(DwarfAddressForm &form);
+
+    //
+    // Propertes
+    //
+
+    void* address() const;
 
 private:
     class DwarfAddressFormPrivate;

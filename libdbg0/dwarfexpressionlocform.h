@@ -34,6 +34,7 @@
 #include "dwarfform.h"
 
 #include <memory>
+#include <vector>
 
 namespace dbg0
 {
@@ -48,6 +49,7 @@ class DwarfExpressionLocForm : public DwarfForm
 {
 public:
     DwarfExpressionLocForm();
+    DwarfExpressionLocForm(const std::vector<char> &exprloc);
     virtual ~DwarfExpressionLocForm();
 
     DwarfExpressionLocForm(const DwarfExpressionLocForm &form);
@@ -56,6 +58,12 @@ public:
     DwarfExpressionLocForm& operator= (DwarfExpressionLocForm form);
 
     void swap(DwarfExpressionLocForm &form);
+
+    //
+    // Properties
+    //
+
+    const std::vector<char> &exprloc() const;
 
 private:
     class DwarfExpressionLocFormPrivate;

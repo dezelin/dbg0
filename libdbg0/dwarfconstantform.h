@@ -34,6 +34,7 @@
 #include "dwarfform.h"
 
 #include <memory>
+#include <vector>
 
 namespace dbg0
 {
@@ -47,7 +48,22 @@ using namespace interfaces::forms;
 class DwarfConstantForm : public DwarfForm
 {
 public:
-    DwarfConstantForm();
+
+    enum class Type : int {
+      Signed = 0,
+      Unsigned,
+
+      UnknownType = -1
+    };
+
+    union byte {
+        char s;
+        unsigned char u;
+    };
+
+    DwarfConstantForm(Type type = Type::Unsigned);
+    DwarfConstantForm(const std::vector<char> &constant);
+    DwarfConstantForm(const std::vector<unsigned char> &constant);
     virtual ~DwarfConstantForm();
 
     DwarfConstantForm(const DwarfConstantForm &form);
@@ -56,6 +72,14 @@ public:
     DwarfConstantForm& operator= (DwarfConstantForm form);
 
     void swap(DwarfConstantForm &form);
+
+    //
+    // Properties
+    //
+
+    const std::vector<byte> &constant() const;
+
+    Type type() const;
 
 private:
     class DwarfConstantFormPrivate;

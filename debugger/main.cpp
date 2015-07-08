@@ -32,6 +32,7 @@
 #include <QApplication>
 
 #include "elfexecutable.h"
+#include <vector>
 
 int main(int argc, char *argv[])
 {

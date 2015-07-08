@@ -47,7 +47,7 @@ using namespace interfaces::forms;
 class DwarfMacroPtrForm : public DwarfForm
 {
 public:
-    DwarfMacroPtrForm();
+    DwarfMacroPtrForm(size_t macptr = 0);
     virtual ~DwarfMacroPtrForm();
 
     DwarfMacroPtrForm(const DwarfMacroPtrForm &form);
@@ -56,6 +56,12 @@ public:
     DwarfMacroPtrForm& operator= (DwarfMacroPtrForm form);
 
     void swap(DwarfMacroPtrForm &form);
+
+    //
+    // Properties
+    //
+
+    size_t macptr() const;
 
 private:
     class DwarfMacroPtrFormPrivate;

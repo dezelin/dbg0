@@ -34,6 +34,7 @@
 #include "dwarfform.h"
 
 #include <memory>
+#include <vector>
 
 namespace dbg0
 {
@@ -48,6 +49,7 @@ class DwarfBlockForm : public DwarfForm
 {
 public:
     DwarfBlockForm();
+    DwarfBlockForm(const std::vector<char> &block);
     virtual ~DwarfBlockForm();
 
     DwarfBlockForm(const DwarfBlockForm &form);
@@ -56,6 +58,12 @@ public:
     DwarfBlockForm& operator= (DwarfBlockForm form);
 
     void swap(DwarfBlockForm &form);
+
+    //
+    // Properties
+    //
+
+    const std::vector<char> &block() const;
 
 private:
     class DwarfBlockFormPrivate;

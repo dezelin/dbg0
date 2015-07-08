@@ -75,6 +75,8 @@ DwarfForm::~DwarfForm()
 
 DwarfForm::DwarfForm(const DwarfForm &form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfFormPrivate(*form._p));
 }
 

@@ -47,17 +47,35 @@ public:
 
     }
 
-    DwarfBlockFormPrivate(const DwarfBlockFormPrivate &priv)
+    DwarfBlockFormPrivate(const std::vector<char> &block)
+        : _block(block)
     {
 
     }
 
+    DwarfBlockFormPrivate(const DwarfBlockFormPrivate &priv)
+    {
+        _block = priv.block();
+    }
+
+    const std::vector<char> &block() const
+    {
+        return _block;
+    }
+
 private:
+    std::vector<char> _block;
 };
 
 DwarfBlockForm::DwarfBlockForm()
     : DwarfForm(Class::Block)
     , _p(new DwarfBlockFormPrivate())
+{
+}
+
+DwarfBlockForm::DwarfBlockForm(const std::vector<char> &block)
+    : DwarfForm(Class::Block)
+    , _p(new DwarfBlockFormPrivate(block))
 {
 }
 
@@ -69,6 +87,8 @@ DwarfBlockForm::~DwarfBlockForm()
 DwarfBlockForm::DwarfBlockForm(const DwarfBlockForm &form)
     : DwarfForm(form)
 {
+    assert(_p);
+    assert(form._p);
     _p.reset(new DwarfBlockFormPrivate(*form._p));
 }
 
@@ -88,6 +108,16 @@ void DwarfBlockForm::swap(DwarfBlockForm &form)
 {
     DwarfForm::swap(form);
     std::swap(_p, form._p);
+}
+
+//
+// Properties
+//
+
+const std::vector<char> &DwarfBlockForm::block() const
+{
+    assert(_p);
+    return _p->block();
 }
 
 } // namespace forms

@@ -47,7 +47,16 @@ using namespace interfaces::forms;
 class DwarfReferenceForm : public DwarfForm
 {
 public:
-    DwarfReferenceForm();
+
+    enum class Type : int {
+        Reference = 0,
+        ReferenceShared,
+        ReferenceType,
+
+        UnknwownType = -1
+    };
+
+    DwarfReferenceForm(Type type = Type::Reference, size_t reference = 0);
     virtual ~DwarfReferenceForm();
 
     DwarfReferenceForm(const DwarfReferenceForm &form);
@@ -56,6 +65,14 @@ public:
     DwarfReferenceForm& operator= (DwarfReferenceForm form);
 
     void swap(DwarfReferenceForm &form);
+
+    //
+    // Properties
+    //
+
+    size_t reference() const;
+
+    Type type() const;
 
 private:
     class DwarfReferenceFormPrivate;
