@@ -1004,6 +1004,8 @@ private:
 
     DwarfAttribute::Type getAttributeType(Dwarf_Half attribute)
     {
+        // FIXME: There are duplicate attribute types as per defined in
+        // DWARF4 standard. Resolve them!
         DwarfAttribute::Type type = DwarfAttribute::Type::UnknownType;
         switch (attribute)
         {
