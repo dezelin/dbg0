@@ -162,7 +162,17 @@ public:
     void swap(DwarfDie &die);
 
     //
-    // Interface
+    // Properties
+    //
+
+    size_t offset() const;
+    size_t offsetCU() const;
+
+    void setOffset(size_t offset);
+    void setOffsetCU(size_t offset);
+
+    //
+    // Interface Die
     //
 
     virtual void add(Attribute* attribute);

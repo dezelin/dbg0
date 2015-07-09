@@ -45,6 +45,8 @@ class DwarfDie::DwarfDiePrivate
 public:
     DwarfDiePrivate(DwarfDie::Type type)
         : _type(type)
+        , _offset(0)
+        , _offsetCU(0)
     {
 
     }
@@ -53,6 +55,27 @@ public:
     {
         _type = priv._type;
     }
+
+    size_t offset() const
+    {
+        return _offset;
+    }
+
+    size_t offsetCU() const
+    {
+        return _offsetCU;
+    }
+
+    void setOffset(size_t offset)
+    {
+        _offset = offset;
+    }
+
+    void setOffsetCU(size_t offset)
+    {
+        _offsetCU = offset;
+    }
+
 
     //
     // Interface
@@ -89,6 +112,8 @@ private:
     DwarfDie::Type _type;
     std::list<Attribute*> _attributes;
     std::list<Die*> _children;
+    size_t _offset;
+    size_t _offsetCU;
 };
 
 DwarfDie::DwarfDie(DwarfDie::Type type)
@@ -124,6 +149,38 @@ void DwarfDie::swap(DwarfDie &die)
 {
     std::swap(_p, die._p);
 }
+
+//
+// Properties
+//
+
+size_t DwarfDie::offset() const
+{
+    assert(_p);
+    return _p->offset();
+}
+
+size_t DwarfDie::offsetCU() const
+{
+    assert(_p);
+    return _p->offsetCU();
+}
+
+void DwarfDie::setOffset(size_t offset)
+{
+    assert(_p);
+    _p->setOffset(offset);
+}
+
+void DwarfDie::setOffsetCU(size_t offset)
+{
+    assert(_p);
+    _p->setOffsetCU(offset);
+}
+
+//
+// Interface Die
+//
 
 void DwarfDie::add(Attribute* attribute)
 {

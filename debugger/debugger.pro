@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = dbg0
 TEMPLATE = app
 
-CONFIG   += c++11
+QMAKE_CXXFLAGS += -std=c++11 -DBOOST_LOG_DYN_LINK
 
 SOURCES += main.cpp\
         mainwindow.cpp

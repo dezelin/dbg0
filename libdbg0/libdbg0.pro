@@ -9,7 +9,7 @@ QT       -= core gui
 TARGET = dbg0
 TEMPLATE = lib
 
-CONFIG   += c++11
+QMAKE_CXXFLAGS += -std=c++11 -DBOOST_LOG_DYN_LINK
 
 DEFINES += LIBDBG0_LIBRARY
 
@@ -74,3 +74,4 @@ unix {
 
 unix|win32: LIBS += -ldwarf
 unix|win32: LIBS += -lelf
+unix|win32: LIBS += -lboost_log

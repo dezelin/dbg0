@@ -51,8 +51,10 @@
 
 #include <assert.h>
 #include <dwarf.h>
+#include <errno.h>
 #include <libdwarf.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -94,8 +96,10 @@ public:
     int readSymbolTable(const std::string &fileName)
     {
         int fd = open(fileName.c_str(), O_RDONLY);
-        if (fd < 0)
+        if (fd < 0) {
+            LOG(error) << strerror(errno);
             return fd;
+        }
 
         int err = addCompilationUnits(fd);
         close(fd);
@@ -110,11 +114,14 @@ public:
 private:
     int addCompilationUnits(int fd)
     {
+        int err;
         Dwarf_Debug dbg;
         Dwarf_Error error;
-        int err = dwarf_init(fd, DW_DLC_READ, nullptr, nullptr, &dbg, &error);
-        if (err != DW_DLV_OK)
+        if ((err = dwarf_init(fd, DW_DLC_READ, nullptr, nullptr, &dbg, &error))
+            != DW_DLV_OK) {
+            logDwarfError(error);
             return -1;
+        }
 
         Dwarf_Unsigned headerLength;
         Dwarf_Half version;
@@ -130,6 +137,9 @@ private:
                 &abbrevOffset, &addressSize, &nextCuHeader, &error)) != DW_DLV_OK)
             {
                 // Error or DW_DLV_NO_ENTRY (last entry)
+                if (err != DW_DLV_NO_ENTRY)
+                    logDwarfError(error);
+
                 break;
             }
 
@@ -142,27 +152,49 @@ private:
         }
 
         if (err != DW_DLV_OK && err != DW_DLV_NO_ENTRY) {
-            dwarf_finish(dbg, &error);
+            if ((err = dwarf_finish(dbg, &error)) != DW_DLV_OK)
+                logDwarfError(error);
+
             return -2;
         }
 
-        err = dwarf_finish(dbg, &error);
-        if (err != DW_DLV_OK)
+        if ((err = dwarf_finish(dbg, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
             return -3;
+        }
 
         return 0;
     }
 
-    void addAttributes(DwarfCompilationUnit *cu, DwarfDie *ddie,
-        std::initializer_list<int> attributes, Dwarf_Die die)
+    void addAttributes(Dwarf_Debug dbg, DwarfCompilationUnit *cu, DwarfDie *ddie, Dwarf_Die die)
     {
-        assert(cu);
-        assert(ddie);
-        std::for_each(attributes.begin(), attributes.end(), [&](Dwarf_Half attribute) {
-            DwarfAttribute *attr = getAttribute(cu, die, attribute);
+        int err;
+        Dwarf_Error error;
+        Dwarf_Signed attrCount;
+        Dwarf_Attribute *attrList;
+        if ((err = dwarf_attrlist(die, &attrList, &attrCount, &error)) != DW_DLV_OK) {
+            // Die may not have any attributes
+            if (err != DW_DLV_NO_ENTRY)
+                logDwarfError(error);
+
+            return;
+        }
+
+        // Process all retrieved attributes for this die
+        for(int i = 0; i < attrCount; ++i) {
+            Dwarf_Half attrType;
+            Dwarf_Attribute *attribute = attrList + i;
+            if ((err = dwarf_whatattr(*attribute, &attrType, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
+                continue;
+            }
+
+            DwarfAttribute *attr = getAttribute(cu, die, attrType);
             if (attr)
                 ddie->add(attr);
-        });
+        }
+
+        dwarf_dealloc(dbg, attrList, DW_DLA_LIST);
     }
 
     int addCompilationUnit(Dwarf_Debug dbg, Dwarf_Unsigned headerLength,
@@ -174,13 +206,16 @@ private:
         Dwarf_Die noDie = 0, cuDie = 0;
 
         // Compilation will have a single die sibling
-        if ((err = dwarf_siblingof(dbg, noDie, &cuDie, &error)) != DW_DLV_OK)
+        if ((err = dwarf_siblingof(dbg, noDie, &cuDie, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
             return err;
+        }
 
         Dwarf_Off cuDieOffset;
         if ((err = dwarf_get_cu_die_offset_given_cu_header_offset(dbg, cuHeaderOffset,
             &cuDieOffset, &error)) != DW_DLV_OK)
         {
+            logDwarfError(error);
             return err;
         }
 
@@ -204,436 +239,107 @@ private:
     {
         assert(cu);
 
-        auto attributes = { DW_AT_low_pc, DW_AT_high_pc, DW_AT_ranges, DW_AT_name,
-            DW_AT_language, DW_AT_stmt_list, DW_AT_macro_info, DW_AT_comp_dir,
-            DW_AT_producer, DW_AT_identifier_case, DW_AT_base_types, DW_AT_use_UTF8,
-            DW_AT_main_subprogram };
-        addAttributes(cu, cu, attributes, die);
-    }
-
-    int addDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, Dwarf_Die die)
-    {
         int err;
-        Dwarf_Half tag;
         Dwarf_Error error;
-        if ((err = dwarf_tag(die, &tag, &error)) != DW_DLV_OK)
+        Dwarf_Die it = die;
+
+        // Add CU attributes
+        addAttributes(dbg, cu, cu, it);
+
+        if ((err = dwarf_child(it, &it, &error)) != DW_DLV_OK) {
+            // Die doesn't have children
+            if (err != DW_DLV_NO_ENTRY)
+                logDwarfError(error);
+
+            return err;
+        }
+
+        if ((err = addDie(dbg, cu, cu, it)) != DW_DLV_OK)
             return err;
 
-        switch(tag) {
-        case DW_TAG_array_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_class_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_entry_point: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_enumeration_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_formal_parameter: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_imported_declaration: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_label: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_lexical_block: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_member: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_pointer_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_reference_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_compile_unit: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_string_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_structure_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_subroutine_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_typedef: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_union_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_unspecified_parameters: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_variant: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_common_block: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_common_inclusion: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_inheritance: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_inlined_subroutine: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_module: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_ptr_to_member_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_set_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_subrange_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_with_stmt: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_access_declaration: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_base_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_catch_block: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_const_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_constant: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_enumerator: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_file_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_friend: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_namelist: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_namelist_item: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_packed_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_subprogram: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_template_type_parameter: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_template_value_parameter: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_thrown_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_try_block: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_variant_part: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_variable: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_volatile_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_dwarf_procedure: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_restrict_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_interface_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_namespace: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_imported_module: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_unspecified_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_partial_unit: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_imported_unit: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_mutable_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_condition: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_shared_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_type_unit: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_rvalue_reference_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_template_alias: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_lo_user: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_MIPS_loop: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_HP_array_descriptor: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_format_label: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_function_template: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_class_template: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_BINCL: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_EINCL: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_template_template_parameter: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_template_parameter_pack: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_formal_parameter_pack: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_call_site: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_GNU_call_site_parameter: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_ALTIUM_circ_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_ALTIUM_mwa_circ_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_ALTIUM_rev_carry_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_ALTIUM_rom: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_upc_shared_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_upc_strict_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_upc_relaxed_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_PGI_kanji_type: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_PGI_interface_block: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_function_template: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_class_template: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_struct_template: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_union_template: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_indirect_inheritance: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_codeflags: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_memop_info: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_omp_child_func: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_rtti_descriptor: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_dtor_info: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_dtor: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_f90_interface: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_fortran_vax_structure: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_SUN_hi: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        case DW_TAG_hi_user: {
-            err = addArrayTypeDie(dbg, cu, die);
-            break;
-        }
-        default: {
-            assert(!"Unknown die tag.");
-            break;
-        }
-        }
+        // Add CU siblings
+        for(;;) {
+            if ((err = dwarf_siblingof(dbg, it, &it, &error)) != DW_DLV_OK) {
+                // Don't print an error when there are no more dies left
+                if (err != DW_DLV_NO_ENTRY)
+                    logDwarfError(error);
+
+                break;
+            }
+
+            if ((err = addDie(dbg, cu, cu, it)) != DW_DLV_OK)
+                break;
+        }
+
+        if (err == DW_DLV_NO_ENTRY)
+            return DW_DLV_OK;
 
         return err;
     }
 
-    int addArrayTypeDie(Dwarf_Debug dbg, Die *parent, Dwarf_Die die)
+    int addDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, DwarfDie *parent,
+        Dwarf_Die die)
     {
         int err;
         Dwarf_Half tag;
         Dwarf_Error error;
-        if ((err = dwarf_tag(die, &tag, &error)) != DW_DLV_OK)
+        if ((err = dwarf_tag(die, &tag, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
             return err;
+        }
 
-        assert(tag == DW_TAG_array_type);
-        if (tag != DW_TAG_array_type)
+        Dwarf_Off offset;
+        if ((err = dwarf_dieoffset(die, &offset, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
+            return err;
+        }
+
+        Dwarf_Off offsetCU;
+        if ((err = dwarf_die_CU_offset(die, &offsetCU, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
+            return err;
+        }
+
+        std::unique_ptr<DwarfDie> _die(DwarfDieFactory::instance().create(
+            getDieType(tag)));
+        assert(_die);
+        if (!_die)
             return -1;
 
-        //std::unique_ptr<DwarfArrayTypeDie> _d(new DwarfArrayTypeDie());
+        _die->setOffset(offset);
+        _die->setOffsetCU(offsetCU);
+
+        // Add CU attributes
+        addAttributes(dbg, cu, _die.get(), die);
+
+        Dwarf_Die it = die;
+        if ((err = dwarf_child(it, &it, &error)) != DW_DLV_OK) {
+            // Die doesn't have children
+            parent->add(_die.release());
+            return DW_DLV_OK;
+        }
+
+        if ((err = addDie(dbg, cu, _die.get(), it)) != DW_DLV_OK)
+            return err;
+
+        // Add CU siblings
+        for(;;) {
+            if ((err = dwarf_siblingof(dbg, it, &it, &error)) != DW_DLV_OK) {
+                // Don't print an error when there are no more dies left
+                if (err != DW_DLV_NO_ENTRY)
+                    logDwarfError(error);
+
+                break;
+            }
+
+            if ((err = addDie(dbg, cu, _die.get(), it)) != DW_DLV_OK)
+                break;
+        }
+
+        if (err == DW_DLV_OK || err == DW_DLV_NO_ENTRY) {
+            parent->add(_die.release());
+            return DW_DLV_OK;
+        }
 
         return err;
     }
@@ -647,15 +353,19 @@ private:
         Dwarf_Bool haveAttr;
         Dwarf_Error error;
 
-        if ((err = dwarf_hasattr(die, attribute, &haveAttr, &error)) != DW_DLV_OK)
+        if ((err = dwarf_hasattr(die, attribute, &haveAttr, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
             return nullptr;
+        }
 
         if (!haveAttr)
             return nullptr;
 
         Dwarf_Attribute attr;
-        if ((err = dwarf_attr(die, attribute, &attr, &error)) != DW_DLV_OK)
+        if ((err = dwarf_attr(die, attribute, &attr, &error)) != DW_DLV_OK) {
+            logDwarfError(error);
             return nullptr;
+        }
 
         DwarfForm::Class _class = getAttributeFormClass(attr, cu->dieOffset());
         if (_class == DwarfForm::Class::UnknownClass)
@@ -670,8 +380,10 @@ private:
         {
         case DwarfForm::Class::Address: {
             Dwarf_Addr addr;
-            if ((err = dwarf_formaddr(attr, &addr, &error)) != DW_DLV_OK)
+            if ((err = dwarf_formaddr(attr, &addr, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             // Address can be nullptr
             _form.reset(DwarfFormFactory::instance().createAddress(
@@ -680,8 +392,10 @@ private:
         }
         case DwarfForm::Class::Block: {
             Dwarf_Block *block;
-            if ((err = dwarf_formblock(attr, &block, &error)) != DW_DLV_OK)
+            if ((err = dwarf_formblock(attr, &block, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             assert(block);
             if (!block) return nullptr;
@@ -692,23 +406,29 @@ private:
         }
         case DwarfForm::Class::Constant: {
             Dwarf_Half formType;
-            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             if (formType == DW_FORM_data1 || formType == DW_FORM_data2 ||
                 formType == DW_FORM_data4 || formType == DW_FORM_data8 ||
                 formType == DW_FORM_udata)
             {
                 Dwarf_Unsigned udata;
-                if ((err = dwarf_formudata(attr, &udata, &error)) != DW_DLV_OK)
+                if ((err = dwarf_formudata(attr, &udata, &error)) != DW_DLV_OK) {
+                    logDwarfError(error);
                     return nullptr;
+                }
 
                 _form.reset(DwarfFormFactory::instance().createUnsignedConstant(udata));
             }
             else if (formType == DW_FORM_sdata) {
                 Dwarf_Signed sdata;
-                if ((err = dwarf_formsdata(attr, &sdata, &error)) != DW_DLV_OK)
+                if ((err = dwarf_formsdata(attr, &sdata, &error)) != DW_DLV_OK) {
+                    logDwarfError(error);
                     return nullptr;
+                }
 
                 _form.reset(DwarfFormFactory::instance().createSignedConstant(sdata));
             }
@@ -722,8 +442,10 @@ private:
         case DwarfForm::Class::ExpressionLoc: {
             Dwarf_Unsigned len;
             Dwarf_Ptr block;
-            if ((err = dwarf_formexprloc(attr, &len, &block, &error)) != DW_DLV_OK)
+            if ((err = dwarf_formexprloc(attr, &len, &block, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             assert(len > 0);
             assert(block);
@@ -734,8 +456,10 @@ private:
         }
         case DwarfForm::Class::Flag: {
             Dwarf_Bool flag;
-            if ((err = dwarf_formflag(attr, &flag, &error)) != DW_DLV_OK)
+            if ((err = dwarf_formflag(attr, &flag, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             _form.reset(DwarfFormFactory::instance().createFlag(flag));
             break;
@@ -743,8 +467,10 @@ private:
         case DwarfForm::Class::LinePtr: {
             // Reference to .debug_line section
             Dwarf_Off offset;
-            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             _form.reset(DwarfFormFactory::instance().createLinePtr(offset));
             break;
@@ -752,8 +478,10 @@ private:
         case DwarfForm::Class::LocationListPtr: {
             // Reference to .debug_loc section
             Dwarf_Off offset;
-            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             _form.reset(DwarfFormFactory::instance().createLocationListPtr(offset));
             break;
@@ -761,8 +489,10 @@ private:
         case DwarfForm::Class::MacroPtr: {
             // Reference to .debug_macinfo section
             Dwarf_Off offset;
-            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             _form.reset(DwarfFormFactory::instance().createMacroPtr(offset));
             break;
@@ -770,16 +500,20 @@ private:
         case DwarfForm::Class::RangeListPtr: {
             // Reference to .debug_ranges section
             Dwarf_Off offset;
-            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+            if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             _form.reset(DwarfFormFactory::instance().createRangeListPtr(offset));
             break;
         }
         case DwarfForm::Class::Reference: {
             Dwarf_Half formType;
-            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             if (formType == DW_FORM_ref1 || formType == DW_FORM_ref2 ||
                 formType == DW_FORM_ref4 || formType == DW_FORM_ref8 ||
@@ -787,24 +521,30 @@ private:
             {
                 // Reference to the same CU
                 Dwarf_Off offset;
-                if ((err = dwarf_formref(attr, &offset, &error)) != DW_DLV_OK)
+                if ((err = dwarf_formref(attr, &offset, &error)) != DW_DLV_OK) {
+                    logDwarfError(error);
                     return nullptr;
+                }
 
                 _form.reset(DwarfFormFactory::instance().createLocalReference(offset));
             }
             else if (formType == DW_FORM_ref_addr) {
                 // Reference to .debug_info section of the same executable
                 Dwarf_Off offset;
-                if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK)
+                if ((err = dwarf_global_formref(attr, &offset, &error)) != DW_DLV_OK) {
+                    logDwarfError(error);
                     return nullptr;
+                }
 
                 _form.reset(DwarfFormFactory::instance().createGlobalReference(offset));
             }
             else if (formType == DW_FORM_ref_sig8 ) {
                 // Reference to another symbol table using 8-byte hash
                 Dwarf_Sig8 sig8; // 8-byte hash
-                if ((err = dwarf_formsig8(attr, &sig8, &error)) != DW_DLV_OK)
+                if ((err = dwarf_formsig8(attr, &sig8, &error)) != DW_DLV_OK) {
+                    logDwarfError(error);
                     return nullptr;
+                }
 
                 _form.reset(DwarfFormFactory::instance().createSharedReference(
                     reinterpret_cast<u_int64_t>(sig8.signature)));
@@ -818,12 +558,16 @@ private:
         }
         case DwarfForm::Class::String: {
             Dwarf_Half formType;
-            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+            if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             char *string = nullptr;
-            if ((err = dwarf_formstring(attr, &string, &error)) != DW_DLV_OK)
+            if ((err = dwarf_formstring(attr, &string, &error)) != DW_DLV_OK) {
+                logDwarfError(error);
                 return nullptr;
+            }
 
             _form.reset(DwarfFormFactory::instance().createString(string));
             break;
@@ -852,12 +596,12 @@ private:
         Dwarf_Half formType;
         Dwarf_Error error;
         if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK) {
-            LOG(error) << "Unknown attribute form type: " << err;
+            logDwarfError(error);
             return DwarfForm::Class::UnknownClass;
         }
 
         if ((err = dwarf_whatattr(attr, &attrType, &error)) != DW_DLV_OK) {
-            LOG(error) << "Unkwown attribute type: " << err;
+            logDwarfError(error);
             return DwarfForm::Class::UnknownClass;
         }
 
@@ -865,8 +609,7 @@ private:
         if ((_class = dwarf_get_form_class(4 /*DWARF4*/, attrType, cuOffset,
             formType)) == DW_FORM_CLASS_UNKNOWN)
         {
-            LOG(error) << "Unknown attribute class: " << attrType << " "
-                       << cuOffset << " " << formType;
+            logDwarfError(error);
             return DwarfForm::Class::UnknownClass;
         }
 
@@ -932,74 +675,6 @@ private:
         }
 
         return classType;
-    }
-
-    DwarfForm::Class xxxgetAttributeFormClass(Dwarf_Attribute attr)
-    {
-        int err;
-        Dwarf_Half formType;
-        Dwarf_Error error;
-        if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
-            return DwarfForm::Class::UnknownClass;
-
-        DwarfForm::Class _class = DwarfForm::Class::UnknownClass;
-
-        switch(formType) {
-        case DW_FORM_addr: {
-            _class = DwarfForm::Class::Address;
-            break;
-        }
-        case DW_FORM_block:
-        case DW_FORM_block1:
-        case DW_FORM_block2:
-        case DW_FORM_block4: {
-            _class = DwarfForm::Class::Block;
-            break;
-        }
-        case DW_FORM_data1:
-        case DW_FORM_data2:
-        case DW_FORM_data4:
-        case DW_FORM_data8:
-        case DW_FORM_sdata:
-        case DW_FORM_udata: {
-            _class = DwarfForm::Class::Constant;
-            break;
-        }
-        case DW_FORM_exprloc: {
-            _class = DwarfForm::Class::ExpressionLoc;
-            break;
-        }
-        case DW_FORM_flag:
-        case DW_FORM_flag_present: {
-            _class = DwarfForm::Class::Flag;
-            break;
-        }
-        case DW_FORM_ref_addr:
-        case DW_FORM_ref1:
-        case DW_FORM_ref2:
-        case DW_FORM_ref4:
-        case DW_FORM_ref8:
-        case DW_FORM_ref_udata:
-        case DW_FORM_ref_sig8: {
-            _class = DwarfForm::Class::Reference;
-            break;
-        }
-        case DW_FORM_strp:
-        case DW_FORM_string: {
-            _class = DwarfForm::Class::String;
-            break;
-        }
-
-        case DW_FORM_indirect:
-        case DW_FORM_sec_offset:
-
-        default: {
-            assert(!"Unknown form type.");
-            break;
-        }
-        }
-
-        return _class;
     }
 
     DwarfAttribute::Type getAttributeType(Dwarf_Half attribute)
@@ -1869,11 +1544,434 @@ private:
         }
         default: {
             assert(!"Unknown attribute.");
+            LOG(error) << "Unknown attribute: " << attribute;
             break;
         }
         }
 
         return type;
+    }
+
+    DwarfDie::Type getDieType(Dwarf_Half tag) const
+    {
+        DwarfDie::Type type = DwarfDie::Type::UnknownType;
+        switch (tag) {
+        case DW_TAG_array_type: {
+            type = DwarfDie::Type::ArrayType;
+            break;
+        }
+        case DW_TAG_class_type: {
+            type = DwarfDie::Type::ClassType;
+            break;
+        }
+        case DW_TAG_entry_point: {
+            type = DwarfDie::Type::EntryPoint;
+            break;
+        }
+        case DW_TAG_enumeration_type: {
+            type = DwarfDie::Type::EnumerationType;
+            break;
+        }
+        case DW_TAG_formal_parameter: {
+            type = DwarfDie::Type::FormalParameter;
+            break;
+        }
+        case DW_TAG_imported_declaration: {
+            type = DwarfDie::Type::ImportedDeclaration;
+            break;
+        }
+        case DW_TAG_label: {
+            type = DwarfDie::Type::Label;
+            break;
+        }
+        case DW_TAG_lexical_block: {
+            type = DwarfDie::Type::LexicalBlock;
+            break;
+        }
+        case DW_TAG_member: {
+            type = DwarfDie::Type::Member;
+            break;
+        }
+        case DW_TAG_pointer_type: {
+            type = DwarfDie::Type::PointerType;
+            break;
+        }
+        case DW_TAG_reference_type: {
+            type = DwarfDie::Type::ReferenceType;
+            break;
+        }
+        case DW_TAG_compile_unit: {
+            type = DwarfDie::Type::CompileUnit;
+            break;
+        }
+        case DW_TAG_string_type: {
+            type = DwarfDie::Type::StringType;
+            break;
+        }
+        case DW_TAG_structure_type: {
+            type = DwarfDie::Type::StructureType;
+            break;
+        }
+        case DW_TAG_subroutine_type: {
+            type = DwarfDie::Type::SubroutineType;
+            break;
+        }
+        case DW_TAG_typedef: {
+            type = DwarfDie::Type::Typedef;
+            break;
+        }
+        case DW_TAG_union_type: {
+            type = DwarfDie::Type::UnionType;
+            break;
+        }
+        case DW_TAG_unspecified_parameters: {
+            type = DwarfDie::Type::UnspecifiedParameters;
+            break;
+        }
+        case DW_TAG_variant: {
+            type = DwarfDie::Type::Variant;
+            break;
+        }
+        case DW_TAG_common_block: {
+            type = DwarfDie::Type::CommonBlock;
+            break;
+        }
+        case DW_TAG_common_inclusion: {
+            type = DwarfDie::Type::CommonInclusion;
+            break;
+        }
+        case DW_TAG_inheritance: {
+            type = DwarfDie::Type::Inheritance;
+            break;
+        }
+        case DW_TAG_inlined_subroutine: {
+            type = DwarfDie::Type::InlinedSubroutine;
+            break;
+        }
+        case DW_TAG_module: {
+            type = DwarfDie::Type::Module;
+            break;
+        }
+        case DW_TAG_ptr_to_member_type: {
+            type = DwarfDie::Type::PointerToMemberType;
+            break;
+        }
+        case DW_TAG_set_type: {
+            type = DwarfDie::Type::SetType;
+            break;
+        }
+        case DW_TAG_subrange_type: {
+            type = DwarfDie::Type::SubrangeType;
+            break;
+        }
+        case DW_TAG_with_stmt: {
+            type = DwarfDie::Type::WithStatement;
+            break;
+        }
+        case DW_TAG_access_declaration: {
+            type = DwarfDie::Type::AccessDeclaration;
+            break;
+        }
+        case DW_TAG_base_type: {
+            type = DwarfDie::Type::BaseType;
+            break;
+        }
+        case DW_TAG_catch_block: {
+            type = DwarfDie::Type::CatchBlock;
+            break;
+        }
+        case DW_TAG_const_type: {
+            type = DwarfDie::Type::ConstType;
+            break;
+        }
+        case DW_TAG_constant: {
+            type = DwarfDie::Type::Constant;
+            break;
+        }
+        case DW_TAG_enumerator: {
+            type = DwarfDie::Type::Enumerator;
+            break;
+        }
+        case DW_TAG_file_type: {
+            type = DwarfDie::Type::FileType;
+            break;
+        }
+        case DW_TAG_friend: {
+            type = DwarfDie::Type::Friend;
+            break;
+        }
+        case DW_TAG_namelist: {
+            type = DwarfDie::Type::Namelist;
+            break;
+        }
+        //case DW_TAG_namelist_items:
+        case DW_TAG_namelist_item: {
+            type = DwarfDie::Type::NamelistItem;
+            break;
+        }
+        case DW_TAG_packed_type: {
+            type = DwarfDie::Type::PackedType;
+            break;
+        }
+        case DW_TAG_subprogram: {
+            type = DwarfDie::Type::Subprogram;
+            break;
+        }
+        //case DW_TAG_template_type_param:
+        case DW_TAG_template_type_parameter: {
+            type = DwarfDie::Type::TemplateTypeParameter;
+            break;
+        }
+        //case DW_TAG_template_value_param:
+        case DW_TAG_template_value_parameter: {
+            type = DwarfDie::Type::TemplateValueParameter;
+            break;
+        }
+        case DW_TAG_thrown_type: {
+            type = DwarfDie::Type::ThrownType;
+            break;
+        }
+        case DW_TAG_try_block: {
+            type = DwarfDie::Type::TryBlock;
+            break;
+        }
+        case DW_TAG_variant_part: {
+            type = DwarfDie::Type::VariantPart;
+            break;
+        }
+        case DW_TAG_variable: {
+            type = DwarfDie::Type::Variable;
+            break;
+        }
+        case DW_TAG_volatile_type: {
+            type = DwarfDie::Type::VolatileType;
+            break;
+        }
+        case DW_TAG_dwarf_procedure: {
+            type = DwarfDie::Type::DwarfProcedure;
+            break;
+        }
+        case DW_TAG_restrict_type: {
+            type = DwarfDie::Type::RestrictType;
+            break;
+        }
+        case DW_TAG_interface_type: {
+            type = DwarfDie::Type::InterfaceType;
+            break;
+        }
+        case DW_TAG_namespace: {
+            type = DwarfDie::Type::Namespace;
+            break;
+        }
+        case DW_TAG_imported_module: {
+            type = DwarfDie::Type::ImportedModule;
+            break;
+        }
+        case DW_TAG_unspecified_type: {
+            type = DwarfDie::Type::UnspecifiedType;
+            break;
+        }
+        case DW_TAG_partial_unit: {
+            type = DwarfDie::Type::PartialUnit;
+            break;
+        }
+        case DW_TAG_imported_unit: {
+            type = DwarfDie::Type::ImportedUnit;
+            break;
+        }
+        case DW_TAG_mutable_type: {
+            type = DwarfDie::Type::MutableType;
+            break;
+        }
+        case DW_TAG_condition: {
+            type = DwarfDie::Type::Condition;
+            break;
+        }
+        case DW_TAG_shared_type: {
+            type = DwarfDie::Type::SharedType;
+            break;
+        }
+        case DW_TAG_type_unit: {
+            type = DwarfDie::Type::TypeUnit;
+            break;
+        }
+        case DW_TAG_rvalue_reference_type: {
+            type = DwarfDie::Type::RValueReferenceType;
+            break;
+        }
+        case DW_TAG_template_alias: {
+            type = DwarfDie::Type::TemplateAlias;
+            break;
+        }
+        case DW_TAG_lo_user: {
+            type = DwarfDie::Type::LoUser;
+            break;
+        }
+        case DW_TAG_MIPS_loop: {
+            type = DwarfDie::Type::MIPSLoop;
+            break;
+        }
+        // HP extensions
+        case DW_TAG_HP_array_descriptor: {
+            type = DwarfDie::Type::HPArrayDescriptor;
+            break;
+        }
+        // GNU extensions
+        case DW_TAG_format_label: {
+            type = DwarfDie::Type::FormatLabel;
+            break;
+        }
+        case DW_TAG_function_template: {
+            type = DwarfDie::Type::FunctionTemplate;
+            break;
+        }
+        case DW_TAG_class_template: {
+            type = DwarfDie::Type::ClassTemplate;
+            break;
+        }
+        case DW_TAG_GNU_BINCL: {
+            type = DwarfDie::Type::GNUBINCL;
+            break;
+        }
+        case DW_TAG_GNU_EINCL: {
+            type = DwarfDie::Type::GNUEINCL;
+            break;
+        }
+        // GNU extension
+        //case DW_TAG_GNU_template_template_param:
+        case DW_TAG_GNU_template_template_parameter: {
+            type = DwarfDie::Type::GNUTemplateTemplateParameter;
+            break;
+        }
+        case DW_TAG_GNU_template_parameter_pack: {
+            type = DwarfDie::Type::GNUTemplateParameterPack;
+            break;
+        }
+        case DW_TAG_GNU_formal_parameter_pack: {
+            type = DwarfDie::Type::GNUFormalParameterPack;
+            break;
+        }
+        case DW_TAG_GNU_call_site: {
+            type = DwarfDie::Type::GNUCallSite;
+            break;
+        }
+        case DW_TAG_GNU_call_site_parameter: {
+            type = DwarfDie::Type::GNUCallSiteParameter;
+            break;
+        }
+        // ALTIUM extensions
+        case DW_TAG_ALTIUM_circ_type: {
+            type = DwarfDie::Type::ALTIUMCircType;
+            break;
+        }
+        case DW_TAG_ALTIUM_mwa_circ_type: {
+            type = DwarfDie::Type::ALTIUMMWACircType;
+            break;
+        }
+        case DW_TAG_ALTIUM_rev_carry_type: {
+            type = DwarfDie::Type::ALTIUMRevCarryType;
+            break;
+        }
+        case DW_TAG_ALTIUM_rom: {
+            type = DwarfDie::Type::ALTIUMRom;
+            break;
+        }
+        // The following 3 are extensions to support UPC
+        case DW_TAG_upc_shared_type: {
+            type = DwarfDie::Type::UPCSharedType;
+            break;
+        }
+        case DW_TAG_upc_strict_type: {
+            type = DwarfDie::Type::UPCStrictType;
+            break;
+        }
+        case DW_TAG_upc_relaxed_type: {
+            type = DwarfDie::Type::UPCRelaxedType;
+            break;
+        }
+        // PGI (STMicroelectronics) extensions.
+        case DW_TAG_PGI_kanji_type: {
+            type = DwarfDie::Type::PGIKanjiType;
+            break;
+        }
+        case DW_TAG_PGI_interface_block: {
+            type = DwarfDie::Type::PGIInterfaceBlock;
+            break;
+        }
+        // The following are SUN extensions
+        case DW_TAG_SUN_function_template: {
+            type = DwarfDie::Type::SUNFunctionTemplate;
+            break;
+        }
+        case DW_TAG_SUN_class_template: {
+            type = DwarfDie::Type::SUNClassTemplate;
+            break;
+        }
+        case DW_TAG_SUN_struct_template: {
+            type = DwarfDie::Type::SUNStructTemplate;
+            break;
+        }
+        case DW_TAG_SUN_union_template: {
+            type = DwarfDie::Type::SUNUnionTemplate;
+            break;
+        }
+        case DW_TAG_SUN_indirect_inheritance: {
+            type = DwarfDie::Type::SUNIndirectInheritance;
+            break;
+        }
+        case DW_TAG_SUN_codeflags: {
+            type = DwarfDie::Type::SUNCodeFlags;
+            break;
+        }
+        case DW_TAG_SUN_memop_info: {
+            type = DwarfDie::Type::SUNMemOpInfo;
+            break;
+        }
+        case DW_TAG_SUN_omp_child_func: {
+            type = DwarfDie::Type::SUNOMPChildFunc;
+            break;
+        }
+        case DW_TAG_SUN_rtti_descriptor: {
+            type = DwarfDie::Type::SUNRTTIDescriptor;
+            break;
+        }
+        case DW_TAG_SUN_dtor_info: {
+            type = DwarfDie::Type::SUNDtorInfo;
+            break;
+        }
+        case DW_TAG_SUN_dtor: {
+            type = DwarfDie::Type::SUNDtor;
+            break;
+        }
+        case DW_TAG_SUN_f90_interface: {
+            type = DwarfDie::Type::SUNf90Interface;
+            break;
+        }
+        case DW_TAG_SUN_fortran_vax_structure: {
+            type = DwarfDie::Type::SUNFortranVaxStructure;
+            break;
+        }
+        case DW_TAG_SUN_hi: {
+            type = DwarfDie::Type::SUNHi;
+            break;
+        }
+        case DW_TAG_hi_user: {
+            type = DwarfDie::Type::HiUser;
+            break;
+        }
+        default: {
+            assert(!"Unknown die tag.");
+            LOG(error) << "Unknown die tag: " << tag;
+            break;
+        }
+        }
+
+        return type;
+    }
+
+    void logDwarfError(Dwarf_Error error)
+    {
+        LOG(error) << dwarf_errmsg(error);
     }
 
 private:

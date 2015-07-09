@@ -57,7 +57,7 @@ DwarfCompilationUnit* DwarfDieFactory::createCompileUnit()
 
 DwarfDie* DwarfDieFactory::create(DwarfDie::Type type) const
 {
-    return nullptr;
+    return new DwarfDie(type);
 }
 
 } // namespace factories
