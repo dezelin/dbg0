@@ -1004,7 +1004,874 @@ private:
 
     DwarfAttribute::Type getAttributeType(Dwarf_Half attribute)
     {
+        DwarfAttribute::Type type = DwarfAttribute::Type::UnknownType;
+        switch (attribute)
+        {
+        case DW_AT_sibling: {
+            type = DwarfAttribute::Type::Sibling;
+            break;
+        }
+        case DW_AT_location: {
+            type = DwarfAttribute::Type::Location;
+            break;
+        }
+        case DW_AT_name: {
+            type = DwarfAttribute::Type::Name;
+            break;
+        }
+        case DW_AT_ordering: {
+            type = DwarfAttribute::Type::Ordering;
+            break;
+        }
+        case DW_AT_subscr_data: {
+            type = DwarfAttribute::Type::SubscrData;
+            break;
+        }
+        case DW_AT_byte_size: {
+            type = DwarfAttribute::Type::ByteSize;
+            break;
+        }
+        case DW_AT_bit_offset: {
+            type = DwarfAttribute::Type::BitOffset;
+            break;
+        }
+        case DW_AT_bit_size: {
+            type = DwarfAttribute::Type::BitSize;
+            break;
+        }
+        case DW_AT_element_list: {
+            type = DwarfAttribute::Type::ElementList;
+            break;
+        }
+        case DW_AT_stmt_list: {
+            type = DwarfAttribute::Type::StatementList;
+            break;
+        }
+        case DW_AT_low_pc: {
+            type = DwarfAttribute::Type::LowPC;
+            break;
+        }
+        case DW_AT_high_pc: {
+            type = DwarfAttribute::Type::HighPC;
+            break;
+        }
+        case DW_AT_language: {
+            type = DwarfAttribute::Type::Language;
+            break;
+        }
+        case DW_AT_member: {
+            type = DwarfAttribute::Type::Member;
+            break;
+        }
+        case DW_AT_discr: {
+            type = DwarfAttribute::Type::Discr;
+            break;
+        }
+        case DW_AT_discr_value: {
+            type = DwarfAttribute::Type::DiscrValue;
+            break;
+        }
+        case DW_AT_visibility: {
+            type = DwarfAttribute::Type::Visibility;
+            break;
+        }
+        case DW_AT_import: {
+            type = DwarfAttribute::Type::Import;
+            break;
+        }
+        case DW_AT_string_length: {
+            type = DwarfAttribute::Type::StringLength;
+            break;
+        }
+        case DW_AT_common_reference: {
+            type = DwarfAttribute::Type::CommonReference;
+            break;
+        }
+        case DW_AT_comp_dir: {
+            type = DwarfAttribute::Type::CompDir;
+            break;
+        }
+        case DW_AT_const_value: {
+            type = DwarfAttribute::Type::ConstValue;
+            break;
+        }
+        case DW_AT_containing_type: {
+            type = DwarfAttribute::Type::ContainingType;
+            break;
+        }
+        case DW_AT_default_value: {
+            type = DwarfAttribute::Type::DefaultValue;
+            break;
+        }
+        case DW_AT_inline: {
+            type = DwarfAttribute::Type::Inline;
+            break;
+        }
+        case DW_AT_is_optional: {
+            type = DwarfAttribute::Type::IsOptional;
+            break;
+        }
+        case DW_AT_lower_bound: {
+            type = DwarfAttribute::Type::LowerBound;
+            break;
+        }
+        case DW_AT_producer: {
+            type = DwarfAttribute::Type::Producer;
+            break;
+        }
+        case DW_AT_prototyped: {
+            type = DwarfAttribute::Type::Prototyped;
+            break;
+        }
+        case DW_AT_return_addr: {
+            type = DwarfAttribute::Type::ReturnAddr;
+            break;
+        }
+        case DW_AT_start_scope: {
+            type = DwarfAttribute::Type::StartScope;
+            break;
+        }
+        //case DW_AT_stride_size:
+        case DW_AT_bit_stride: {
+            type = DwarfAttribute::Type::BitStride;
+            break;
+        }
+        case DW_AT_upper_bound: {
+            type = DwarfAttribute::Type::UpperBound;
+            break;
+        }
+        case DW_AT_abstract_origin: {
+            type = DwarfAttribute::Type::AbstractOrigin;
+            break;
+        }
+        case DW_AT_accessibility: {
+            type = DwarfAttribute::Type::Accessibility;
+            break;
+        }
+        case DW_AT_address_class: {
+            type = DwarfAttribute::Type::AddressClass;
+            break;
+        }
+        case DW_AT_artificial: {
+            type = DwarfAttribute::Type::Artificial;
+            break;
+        }
+        case DW_AT_base_types: {
+            type = DwarfAttribute::Type::BaseTypes;
+            break;
+        }
+        case DW_AT_calling_convention: {
+            type = DwarfAttribute::Type::CallingConvention;
+            break;
+        }
+        case DW_AT_count: {
+            type = DwarfAttribute::Type::Count;
+            break;
+        }
+        case DW_AT_data_member_location: {
+            type = DwarfAttribute::Type::DataMemberLocation;
+            break;
+        }
+        case DW_AT_decl_column: {
+            type = DwarfAttribute::Type::DeclColumn;
+            break;
+        }
+        case DW_AT_decl_file: {
+            type = DwarfAttribute::Type::DeclFile;
+            break;
+        }
+        case DW_AT_decl_line: {
+            type = DwarfAttribute::Type::DeclLine;
+            break;
+        }
+        case DW_AT_declaration: {
+            type = DwarfAttribute::Type::Declaration;
+            break;
+        }
+        case DW_AT_discr_list: {
+            type = DwarfAttribute::Type::DiscrList;
+            break;
+        }
+        case DW_AT_encoding: {
+            type = DwarfAttribute::Type::Encoding;
+            break;
+        }
+        case DW_AT_external: {
+            type = DwarfAttribute::Type::External;
+            break;
+        }
+        case DW_AT_frame_base: {
+            type = DwarfAttribute::Type::FrameBase;
+            break;
+        }
+        case DW_AT_friend: {
+            type = DwarfAttribute::Type::Friend;
+            break;
+        }
+        case DW_AT_identifier_case: {
+            type = DwarfAttribute::Type::IdentifierCase;
+            break;
+        }
+        case DW_AT_macro_info: {
+            type = DwarfAttribute::Type::MacroInfo;
+            break;
+        }
+        case DW_AT_namelist_item: {
+            type = DwarfAttribute::Type::NamelistItem;
+            break;
+        }
+        case DW_AT_priority: {
+            type = DwarfAttribute::Type::Priority;
+            break;
+        }
+        case DW_AT_segment: {
+            type = DwarfAttribute::Type::Segment;
+            break;
+        }
+        case DW_AT_specification: {
+            type = DwarfAttribute::Type::Specification;
+            break;
+        }
+        case DW_AT_static_link: {
+            type = DwarfAttribute::Type::StaticLink;
+            break;
+        }
+        case DW_AT_type: {
+            type = DwarfAttribute::Type::Type;
+            break;
+        }
+        case DW_AT_use_location: {
+            type = DwarfAttribute::Type::UseLocation;
+            break;
+        }
+        case DW_AT_variable_parameter: {
+            type = DwarfAttribute::Type::VariableParameter;
+            break;
+        }
+        case DW_AT_virtuality: {
+            type = DwarfAttribute::Type::Virtuality;
+            break;
+        }
+        case DW_AT_vtable_elem_location: {
+            type = DwarfAttribute::Type::VTableElemLocation;
+            break;
+        }
+        case DW_AT_allocated: {
+            type = DwarfAttribute::Type::Allocated;
+            break;
+        }
+        case DW_AT_associated: {
+            type = DwarfAttribute::Type::Associated;
+            break;
+        }
+        case DW_AT_data_location: {
+            type = DwarfAttribute::Type::DataLocation;
+            break;
+        }
+        //case DW_AT_stride:
+        case DW_AT_byte_stride: {
+            type = DwarfAttribute::Type::ByteStride;
+            break;
+        }
+        case DW_AT_entry_pc: {
+            type = DwarfAttribute::Type::EntryPC;
+            break;
+        }
+        case DW_AT_use_UTF8: {
+            type = DwarfAttribute::Type::UseUTF8;
+            break;
+        }
+        case DW_AT_extension: {
+            type = DwarfAttribute::Type::Extension;
+            break;
+        }
+        case DW_AT_ranges: {
+            type = DwarfAttribute::Type::Ranges;
+            break;
+        }
+        case DW_AT_trampoline: {
+            type = DwarfAttribute::Type::Trampoline;
+            break;
+        }
+        case DW_AT_call_column: {
+            type = DwarfAttribute::Type::CallColumn;
+            break;
+        }
+        case DW_AT_call_file: {
+            type = DwarfAttribute::Type::CallFile;
+            break;
+        }
+        case DW_AT_call_line: {
+            type = DwarfAttribute::Type::CallLine;
+            break;
+        }
+        case DW_AT_description: {
+            type = DwarfAttribute::Type::Description;
+            break;
+        }
+        case DW_AT_binary_scale: {
+            type = DwarfAttribute::Type::BinaryScale;
+            break;
+        }
+        case DW_AT_decimal_scale: {
+            type = DwarfAttribute::Type::DecimalScale;
+            break;
+        }
+        case DW_AT_small: {
+            type = DwarfAttribute::Type::Small;
+            break;
+        }
+        case DW_AT_decimal_sign: {
+            type = DwarfAttribute::Type::DecimalSign;
+            break;
+        }
+        case DW_AT_digit_count: {
+            type = DwarfAttribute::Type::DigitCount;
+            break;
+        }
+        case DW_AT_picture_string: {
+            type = DwarfAttribute::Type::PictureString;
+            break;
+        }
+        case DW_AT_mutable: {
+            type = DwarfAttribute::Type::Mutable;
+            break;
+        }
+        case DW_AT_threads_scaled: {
+            type = DwarfAttribute::Type::ThreadsScaled;
+            break;
+        }
+        case DW_AT_explicit: {
+            type = DwarfAttribute::Type::Explicit;
+            break;
+        }
+        case DW_AT_object_pointer: {
+            type = DwarfAttribute::Type::ObjectPointer;
+            break;
+        }
+        case DW_AT_endianity: {
+            type = DwarfAttribute::Type::Endianity;
+            break;
+        }
+        case DW_AT_elemental: {
+            type = DwarfAttribute::Type::Elemental;
+            break;
+        }
+        case DW_AT_pure: {
+            type = DwarfAttribute::Type::Pure;
+            break;
+        }
+        case DW_AT_recursive: {
+            type = DwarfAttribute::Type::Recursive;
+            break;
+        }
+        case DW_AT_signature: {
+            type = DwarfAttribute::Type::Signature;
+            break;
+        }
+        case DW_AT_main_subprogram: {
+            type = DwarfAttribute::Type::MainSubprogram;
+            break;
+        }
+        case DW_AT_data_bit_offset: {
+            type = DwarfAttribute::Type::DataBitOffset;
+            break;
+        }
+        case DW_AT_const_expr: {
+            type = DwarfAttribute::Type::ConstExpr;
+            break;
+        }
+        case DW_AT_enum_class: {
+            type = DwarfAttribute::Type::EnumClass;
+            break;
+        }
+        case DW_AT_linkage_name: {
+            type = DwarfAttribute::Type::LinkageName;
+            break;
+        }
+        /* HP extensions. */
+        //case DW_AT_lo_user:
+        case DW_AT_HP_block_index: {
+            type = DwarfAttribute::Type::HPBlockIndex;
+            break;
+        }
+        //case DW_AT_HP_unmodifiable:
+        //case DW_AT_CPQ_discontig_ranges:
+        case DW_AT_MIPS_fde: {
+            type = DwarfAttribute::Type::MIPSfde;
+            break;
+        }
+        //case DW_AT_CPQ_split_lifetimes_var:
+        case DW_AT_MIPS_tail_loop_begin: {
+            type = DwarfAttribute::Type::MIPSTailLoopBegin;
+            break;
+        }
+        //case DW_AT_CPQ_split_lifetimes_rtn:
+        case DW_AT_MIPS_epilog_begin: {
+            type = DwarfAttribute::Type::MIPSEpilogBegin;
+            break;
+        }
+        //case DW_AT_CPQ_prologue_length:
+        case DW_AT_MIPS_loop_unroll_factor: {
+            type = DwarfAttribute::Type::MIPSLoopUnrollFactor;
+            break;
+        }
+        case DW_AT_MIPS_software_pipeline_depth: {
+            type = DwarfAttribute::Type::MIPSSoftwarePipelineDepth;
+            break;
+        }
+        case DW_AT_MIPS_linkage_name: {
+            type = DwarfAttribute::Type::MIPSLinkageName;
+            break;
+        }
+        case DW_AT_MIPS_stride: {
+            type = DwarfAttribute::Type::MIPSStride;
+            break;
+        }
+        case DW_AT_MIPS_abstract_name: {
+            type = DwarfAttribute::Type::MIPSAbstractName;
+            break;
+        }
+        case DW_AT_MIPS_clone_origin: {
+            type = DwarfAttribute::Type::MIPSCloneOrigin;
+            break;
+        }
+        case DW_AT_MIPS_has_inlines: {
+            type = DwarfAttribute::Type::MIPSHasInlines;
+            break;
+        }
+        case DW_AT_MIPS_stride_byte: {
+            type = DwarfAttribute::Type::MIPSStrideByte;
+            break;
+        }
+        case DW_AT_MIPS_stride_elem: {
+            type = DwarfAttribute::Type::MIPSStrideElem;
+            break;
+        }
+        case DW_AT_MIPS_ptr_dopetype: {
+            type = DwarfAttribute::Type::MIPSPtrDopetype;
+            break;
+        }
+        case DW_AT_MIPS_allocatable_dopetype: {
+            type = DwarfAttribute::Type::MIPSAllocatableDopetype;
+            break;
+        }
+        //case DW_AT_HP_actuals_stmt_list:
+        case DW_AT_MIPS_assumed_shape_dopetype: {
+            type = DwarfAttribute::Type::MIPSAssumedShapeDopetype;
+            break;
+        }
+        //case DW_AT_HP_proc_per_section:
+        case DW_AT_MIPS_assumed_size: {
+            type = DwarfAttribute::Type::MIPSAssumedSize;
+            break;
+        }
+        case DW_AT_HP_raw_data_ptr: {
+            type = DwarfAttribute::Type::HPRawDataPtr;
+            break;
+        }
+        case DW_AT_HP_pass_by_reference: {
+            type = DwarfAttribute::Type::HPPassByReference;
+            break;
+        }
+        case DW_AT_HP_opt_level: {
+            type = DwarfAttribute::Type::HPOptLevel;
+            break;
+        }
+        case DW_AT_HP_prof_version_id: {
+            type = DwarfAttribute::Type::HPProfVersionId;
+            break;
+        }
+        case DW_AT_HP_opt_flags: {
+            type = DwarfAttribute::Type::HPOptFlags;
+            break;
+        }
+        case DW_AT_HP_cold_region_low_pc: {
+            type = DwarfAttribute::Type::HPColdRegionLowPC;
+            break;
+        }
+        case DW_AT_HP_cold_region_high_pc: {
+            type = DwarfAttribute::Type::HPColdRegionHighPC;
+            break;
+        }
+        case DW_AT_HP_all_variables_modifiable: {
+            type = DwarfAttribute::Type::HPAllVariablesModifiable;
+            break;
+        }
+        case DW_AT_HP_linkage_name: {
+            type = DwarfAttribute::Type::HPLinkageName;
+            break;
+        }
+        case DW_AT_HP_prof_flags: {
+            type = DwarfAttribute::Type::HPProfFlags;
+            break;
+        }
+        case DW_AT_CPQ_semantic_events: {
+            type = DwarfAttribute::Type::CPQSemanticEvents;
+            break;
+        }
+        case DW_AT_INTEL_other_endian: {
+            type = DwarfAttribute::Type::INTELOtherEndian;
+            break;
+        }
+        // GNU extensions.
+        case DW_AT_sf_names: {
+            type = DwarfAttribute::Type::GNUSrcFilesNames;
+            break;
+        }
+        case DW_AT_src_info: {
+            type = DwarfAttribute::Type::GNUSrcInfo;
+            break;
+        }
+        case DW_AT_mac_info: {
+            type = DwarfAttribute::Type::GNUMacroInfo;
+            break;
+        }
+        case DW_AT_src_coords: {
+            type = DwarfAttribute::Type::GNUSrcCoords;
+            break;
+        }
+        case DW_AT_body_begin: {
+            type = DwarfAttribute::Type::GNUBodyBegin;
+            break;
+        }
+        case DW_AT_body_end: {
+            type = DwarfAttribute::Type::GNUBodyEnd;
+            break;
+        }
+        case DW_AT_GNU_vector: {
+            type = DwarfAttribute::Type::GNUVector;
+            break;
+        }
+        case DW_AT_GNU_guarded_by: {
+            type = DwarfAttribute::Type::GNUGuardedBy;
+            break;
+        }
+        case DW_AT_GNU_pt_guarded_by: {
+            type = DwarfAttribute::Type::GNUPtGuardedBy;
+            break;
+        }
+        case DW_AT_GNU_guarded: {
+            type = DwarfAttribute::Type::GNUGuarded;
+            break;
+        }
+        case DW_AT_GNU_pt_guarded: {
+            type = DwarfAttribute::Type::GNUPtGuarded;
+            break;
+        }
+        case DW_AT_GNU_locks_excluded: {
+            type = DwarfAttribute::Type::GNULocksExcluded;
+            break;
+        }
+        case DW_AT_GNU_exclusive_locks_required: {
+            type = DwarfAttribute::Type::GNUExclusiveLocksRequired;
+            break;
+        }
+        case DW_AT_GNU_shared_locks_required: {
+            type = DwarfAttribute::Type::GNUSharedLocksRequired;
+            break;
+        }
+        case DW_AT_GNU_odr_signature: {
+            type = DwarfAttribute::Type::GNUOdrSignature;
+            break;
+        }
+        case DW_AT_GNU_template_name: {
+            type = DwarfAttribute::Type::GNUTemplateName;
+            break;
+        }
+        //  The GNU call site extension.
+        case DW_AT_GNU_call_site_value: {
+            type = DwarfAttribute::Type::GNUCallSiteValue;
+            break;
+        }
+        case DW_AT_GNU_call_site_data_value: {
+            type = DwarfAttribute::Type::GNUCallSiteDataValue;
+            break;
+        }
+        case DW_AT_GNU_call_site_target: {
+            type = DwarfAttribute::Type::GNUCallSiteTarget;
+            break;
+        }
+        case DW_AT_GNU_call_site_target_clobbered: {
+            type = DwarfAttribute::Type::GNUCallSiteTargetClobbered;
+            break;
+        }
+        case DW_AT_GNU_tail_call: {
+            type = DwarfAttribute::Type::GNUTailCall;
+            break;
+        }
+        case DW_AT_GNU_all_tail_call_sites: {
+            type = DwarfAttribute::Type::GNUAllTailCallSites;
+            break;
+        }
+        case DW_AT_GNU_all_call_sites: {
+            type = DwarfAttribute::Type::GNUAllCallSites;
+            break;
+        }
+        case DW_AT_GNU_all_source_call_sites: {
+            type = DwarfAttribute::Type::GNUAllSourceCallSites;
+            break;
+        }
+        // ALTIUM extension: ALTIUM Compliant location lists (flag)
+        case DW_AT_ALTIUM_loclist: {
+            type = DwarfAttribute::Type::ALTIUMLoclist;
+            break;
+        }
+        // Sun extensions
+        //case DW_AT_VMS_rtnbeg_pd_address:
+        case DW_AT_SUN_template: {
+            type = DwarfAttribute::Type::SUNTemplate;
+            break;
+        }
+        case DW_AT_SUN_alignment: {
+            type = DwarfAttribute::Type::SUNAlignment;
+            break;
+        }
+        case DW_AT_SUN_vtable: {
+            type = DwarfAttribute::Type::SUNvtable;
+            break;
+        }
+        case DW_AT_SUN_count_guarantee: {
+            type = DwarfAttribute::Type::SUNCountGuarantee;
+            break;
+        }
+        case DW_AT_SUN_command_line: {
+            type = DwarfAttribute::Type::SUNCommandLine;
+            break;
+        }
+        case DW_AT_SUN_vbase: {
+            type = DwarfAttribute::Type::SUNvbase;
+            break;
+        }
+        case DW_AT_SUN_compile_options: {
+            type = DwarfAttribute::Type::SUNCompileOptions;
+            break;
+        }
+        case DW_AT_SUN_language: {
+            type = DwarfAttribute::Type::SUNLanguage;
+            break;
+        }
+        case DW_AT_SUN_browser_file: {
+            type = DwarfAttribute::Type::SUNBrowserFile;
+            break;
+        }
+        case DW_AT_SUN_vtable_abi: {
+            type = DwarfAttribute::Type::SUNvtableABI;
+            break;
+        }
+        case DW_AT_SUN_func_offsets: {
+            type = DwarfAttribute::Type::SUNFuncOffsets;
+            break;
+        }
+        case DW_AT_SUN_cf_kind: {
+            type = DwarfAttribute::Type::SUNCfKind;
+            break;
+        }
+        case DW_AT_SUN_vtable_index: {
+            type = DwarfAttribute::Type::SUNvtableIndex;
+            break;
+        }
+        case DW_AT_SUN_omp_tpriv_addr: {
+            type = DwarfAttribute::Type::SUNOmpTprivAddr;
+            break;
+        }
+        case DW_AT_SUN_omp_child_func: {
+            type = DwarfAttribute::Type::SUNOmpChildFunc;
+            break;
+        }
+        case DW_AT_SUN_func_offset: {
+            type = DwarfAttribute::Type::SUNFuncOffset;
+            break;
+        }
+        case DW_AT_SUN_memop_type_ref: {
+            type = DwarfAttribute::Type::SUNMemopTypeRef;
+            break;
+        }
+        case DW_AT_SUN_profile_id: {
+            type = DwarfAttribute::Type::SUNProfileId;
+            break;
+        }
+        case DW_AT_SUN_memop_signature: {
+            type = DwarfAttribute::Type::SUNMemopSignature;
+            break;
+        }
+        case DW_AT_SUN_obj_dir: {
+            type = DwarfAttribute::Type::SUNObjDir;
+            break;
+        }
+        case DW_AT_SUN_obj_file: {
+            type = DwarfAttribute::Type::SUNObjFile;
+            break;
+        }
+        case DW_AT_SUN_original_name: {
+            type = DwarfAttribute::Type::SUNOriginalName;
+            break;
+        }
+        case DW_AT_SUN_hwcprof_signature: {
+            type = DwarfAttribute::Type::SUNHwcprofSignature;
+            break;
+        }
+        case DW_AT_SUN_amd64_parmdump: {
+            type = DwarfAttribute::Type::SUNamd64ParmDump;
+            break;
+        }
+        case DW_AT_SUN_part_link_name: {
+            type = DwarfAttribute::Type::SUNPartLinkName;
+            break;
+        }
+        case DW_AT_SUN_link_name: {
+            type = DwarfAttribute::Type::SUNLinkName;
+            break;
+        }
+        case DW_AT_SUN_pass_with_const: {
+            type = DwarfAttribute::Type::SUNPassWithConst;
+            break;
+        }
+        case DW_AT_SUN_return_with_const: {
+            type = DwarfAttribute::Type::SUNReturnWithConst;
+            break;
+        }
+        case DW_AT_SUN_import_by_name: {
+            type = DwarfAttribute::Type::SUNImportByName;
+            break;
+        }
+        case DW_AT_SUN_f90_pointer: {
+            type = DwarfAttribute::Type::SUNf90Pointer;
+            break;
+        }
+        case DW_AT_SUN_pass_by_ref: {
+            type = DwarfAttribute::Type::SUNPassByRef;
+            break;
+        }
+        case DW_AT_SUN_f90_allocatable: {
+            type = DwarfAttribute::Type::SUNf90Allocatable;
+            break;
+        }
+        case DW_AT_SUN_f90_assumed_shape_array: {
+            type = DwarfAttribute::Type::SUNf90AssumedShapeArray;
+            break;
+        }
+        case DW_AT_SUN_c_vla: {
+            type = DwarfAttribute::Type::SUNCVla;
+            break;
+        }
+        case DW_AT_SUN_return_value_ptr: {
+            type = DwarfAttribute::Type::SUNReturnValuePtr;
+            break;
+        }
+        case DW_AT_SUN_dtor_start: {
+            type = DwarfAttribute::Type::SUNDtorStart;
+            break;
+        }
+        case DW_AT_SUN_dtor_length: {
+            type = DwarfAttribute::Type::SUNDtorLength;
+            break;
+        }
+        case DW_AT_SUN_dtor_state_initial: {
+            type = DwarfAttribute::Type::SUNDtorStateInitial;
+            break;
+        }
+        case DW_AT_SUN_dtor_state_final: {
+            type = DwarfAttribute::Type::SUNDtorStateFinal;
+            break;
+        }
+        case DW_AT_SUN_dtor_state_deltas: {
+            type = DwarfAttribute::Type::SUNDtorStateDeltas;
+            break;
+        }
+        case DW_AT_SUN_import_by_lname: {
+            type = DwarfAttribute::Type::SUNImportByLname;
+            break;
+        }
+        case DW_AT_SUN_f90_use_only: {
+            type = DwarfAttribute::Type::SUNf90UseOnly;
+            break;
+        }
+        case DW_AT_SUN_namelist_spec: {
+            type = DwarfAttribute::Type::SUNNamelistSpec;
+            break;
+        }
+        case DW_AT_SUN_is_omp_child_func: {
+            type = DwarfAttribute::Type::SUNIsOmpChildFunc;
+            break;
+        }
+        case DW_AT_SUN_fortran_main_alias: {
+            type = DwarfAttribute::Type::SUNFortranMainAlias;
+            break;
+        }
+        case DW_AT_SUN_fortran_based: {
+            type = DwarfAttribute::Type::SUNFortranBased;
+            break;
+        }
+        case DW_AT_use_GNAT_descriptive_type: {
+            type = DwarfAttribute::Type::GNATUseDescriptiveType;
+            break;
+        }
+        case DW_AT_GNAT_descriptive_type: {
+            type = DwarfAttribute::Type::GNATDescriptiveType;
+            break;
+        }
+        // UPC extension
+        case DW_AT_upc_threads_scaled: {
+            type = DwarfAttribute::Type::UPCThreadsScaled;
+            break;
+        }
+        // PGI (STMicroelectronics) extensions
+        case DW_AT_PGI_lbase: {
+            type = DwarfAttribute::Type::PGILocalBase;
+            break;
+        }
+        case DW_AT_PGI_soffset: {
+            type = DwarfAttribute::Type::PGISectionOffset;
+            break;
+        }
+        case DW_AT_PGI_lstride: {
+            type = DwarfAttribute::Type::PGILinearStride;
+            break;
+        }
+        // Apple extensions
+        case DW_AT_APPLE_optimized: {
+            type = DwarfAttribute::Type::APPLEOptimized;
+            break;
+        }
+        case DW_AT_APPLE_flags: {
+            type = DwarfAttribute::Type::APPLEFlags;
+            break;
+        }
+        case DW_AT_APPLE_isa: {
+            type = DwarfAttribute::Type::APPLEISA;
+            break;
+        }
+        //case DW_AT_APPLE_closure:
+        case DW_AT_APPLE_block: {
+            type = DwarfAttribute::Type::APPLEBlock;
+            break;
+        }
+        //case DW_AT_APPLE_major_runtime_vers:
+        case DW_AT_APPLE_major_runtime_vers: {
+            type = DwarfAttribute::Type::APPLEMajorRuntimeVers;
+            break;
+        }
+        //case DW_AT_APPLE_runtime_class:
+        case DW_AT_APPLE_runtime_class: {
+            type = DwarfAttribute::Type::APPLERuntimeClass;
+            break;
+        }
+        case DW_AT_APPLE_omit_frame_ptr: {
+            type = DwarfAttribute::Type::APPLEOmitFramePtr;
+            break;
+        }
+        case DW_AT_hi_user: {
+            type = DwarfAttribute::Type::HiUser;
+            break;
+        }
+        default: {
+            assert(!"Unknown attribute.");
+            break;
+        }
+        }
 
+        return type;
     }
 
 private:

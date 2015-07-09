@@ -194,7 +194,7 @@ public:
         INTELOtherEndian,
 
         // GNU extensions
-        GNUSourceFilesNames,
+        GNUSrcFilesNames,
         GNUSrcInfo,
         GNUMacroInfo,
         GNUSrcCoords,
@@ -257,7 +257,7 @@ public:
         SUNPassByRef,
         SUNf90Allocatable,
         SUNf90AssumedShapeArray,
-        SUNcVla,
+        SUNCVla,
         SUNReturnValuePtr,
         SUNDtorStart,
         SUNDtorLength,
