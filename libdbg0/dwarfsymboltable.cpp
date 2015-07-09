@@ -47,6 +47,8 @@
 #include "dwarfreferenceform.h"
 #include "dwarfstringform.h"
 
+#include "logger.h"
+
 #include <assert.h>
 #include <dwarf.h>
 #include <libdwarf.h>
@@ -58,7 +60,6 @@
 #include <algorithm>
 #include <initializer_list>
 #include <list>
-
 
 namespace dbg0
 {
@@ -850,16 +851,22 @@ private:
         Dwarf_Half attrType;
         Dwarf_Half formType;
         Dwarf_Error error;
-        if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK)
+        if ((err = dwarf_whatform(attr, &formType, &error)) != DW_DLV_OK) {
+            LOG(error) << "Unknown attribute form type: " << err;
             return DwarfForm::Class::UnknownClass;
+        }
 
-        if ((err = dwarf_whatattr(attr, &attrType, &error)) != DW_DLV_OK)
+        if ((err = dwarf_whatattr(attr, &attrType, &error)) != DW_DLV_OK) {
+            LOG(error) << "Unkwown attribute type: " << err;
             return DwarfForm::Class::UnknownClass;
+        }
 
         Dwarf_Form_Class _class;
         if ((_class = dwarf_get_form_class(4 /*DWARF4*/, attrType, cuOffset,
             formType)) == DW_FORM_CLASS_UNKNOWN)
         {
+            LOG(error) << "Unknown attribute class: " << attrType << " "
+                       << cuOffset << " " << formType;
             return DwarfForm::Class::UnknownClass;
         }
 

@@ -64,7 +64,8 @@ HEADERS += libdbg0.h \
     dwarfrangelistptrform.h \
     dwarfreferenceform.h \
     dwarfstringform.h \
-    dwarfformfactory.h
+    dwarfformfactory.h \
+    logger.h
 
 unix {
     target.path = /usr/lib
