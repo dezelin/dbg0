@@ -280,6 +280,9 @@ private:
     int addDie(Dwarf_Debug dbg, DwarfCompilationUnit *cu, DwarfDie *parent,
         Dwarf_Die die)
     {
+        assert(cu);
+        assert(parent);
+
         int err;
         Dwarf_Half tag;
         Dwarf_Error error;
